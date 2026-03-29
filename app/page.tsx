@@ -4,11 +4,11 @@ import { useState } from "react";
 import styles from "./page.module.css";
 
 const MODELS = [
-  { id: "openai/gpt-4o", name: "GPT-4o", shortName: "GPT-4o", color: "#10a37f" },
-  { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash", shortName: "Gemini", color: "#4285f4" },
-  { id: "anthropic/claude-3.5-sonnet", name: "Claude 3.5 Sonnet", shortName: "Claude", color: "#d4954a" },
-  { id: "mistralai/mistral-large-2411", name: "Mistral Large", shortName: "Mistral", color: "#ff6b35" },
-  { id: "meta-llama/llama-3.1-70b-instruct:free", name: "Llama 3.1 70B", shortName: "Llama", color: "#a78bfa" },
+  { id: "openai/gpt-4o", name: "GPT-4o", shortName: "ChatGPT", color: "#10a37f" },
+  { id: "google/gemini-3-flash-preview", name: "Gemini 3 Flash", shortName: "Gemini", color: "#4285f4" },
+  { id: "anthropic/claude-sonnet-4-6", name: "Claude Sonnet 4.6", shortName: "Claude", color: "#d4954a" },
+  { id: "perplexity/sonar-pro", name: "Perplexity Sonar Pro", shortName: "Perplexity", color: "#20b2aa" },
+  { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", shortName: "Grok", color: "#e8562a" },
 ];
 
 type ResponseState = { status: "loading" | "done" | "error"; content: string };
@@ -24,8 +24,10 @@ export default function Home() {
   const [question, setQuestion] = useState("");
   const [selectedModels, setSelectedModels] = useState([
     "openai/gpt-4o",
-    "google/gemini-2.0-flash-exp:free",
-    "meta-llama/llama-3.1-70b-instruct:free",
+    "google/gemini-3-flash-preview",
+    "anthropic/claude-sonnet-4-6",
+    "perplexity/sonar-pro",
+    "x-ai/grok-4.1-fast",
   ]);
   const [responses, setResponses] = useState<Record<string, ResponseState>>({});
   const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null);
