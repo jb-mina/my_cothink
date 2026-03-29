@@ -31,7 +31,13 @@ const MODELS = [
   { id: "x-ai/grok-4.1-fast",            name: "Grok 4.1 Fast",        shortName: "Grok",       color: "#e8562a" },
 ];
 
-// ─── Thread storage ───────────────────────────────────────────────────────────
+const MEDIATORS = [
+  { id: "anthropic",                     shortName: "Claude 4",    name: "Claude Sonnet 4",      color: "#42c8a0" },
+  { id: "openai/gpt-4o",                 shortName: "GPT-4o",      name: "GPT-4o",               color: "#10a37f" },
+  { id: "google/gemini-3-flash-preview",  shortName: "Gemini 3",    name: "Gemini 3 Flash",       color: "#4285f4" },
+  { id: "x-ai/grok-4.1-fast",            shortName: "Grok 4.1",    name: "Grok 4.1 Fast",        color: "#e8562a" },
+  { id: "perplexity/sonar-pro",           shortName: "Perplexity",  name: "Perplexity Sonar Pro", color: "#20b2aa" },
+];
 
 const SK = "cothink_threads";
 const getAll = (): Thread[] => { try { return JSON.parse(localStorage.getItem(SK) || "[]"); } catch { return []; } };
@@ -195,6 +201,69 @@ function SynthPanel({
   );
 }
 
+// ─── Model Tabs ───────────────────────────────────────────────────────────────
+
+function ModelTabs({ selModels, responses, queryKey }: {
+  selModels: string[];
+  responses: Record<string, ModelResponse>;
+  queryKey: number;
+}) {
+  const [activeTab, setActiveTab] = useState(0);
+  const statusKey = selModels.map((id) => responses[id]?.status ?? "").join(",");
+
+  useEffect(() => {
+    const firstDone = selModels.findIndex((id) => responses[id]?.status === "done");
+    if (firstDone >= 0) setActiveTab(firstDone);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusKey]);
+
+  useEffect(() => { setActiveTab(0); }, [queryKey]);
+
+  const activeId    = selModels[activeTab];
+  const activeModel = MODELS.find((m) => m.id === activeId);
+  const activeResp  = responses[activeId];
+
+  return (
+    <div className={styles.tabContainer}>
+      <div className={styles.tabBar}>
+        {selModels.map((id, i) => {
+          const m = MODELS.find((x) => x.id === id)!;
+          const r = responses[id];
+          const on = i === activeTab;
+          return (
+            <button key={id}
+              className={`${styles.tabBtn} ${on ? styles.tabActive : ""}`}
+              onClick={() => setActiveTab(i)}
+              style={on ? { borderBottomColor: m.color, color: m.color } : {}}>
+              <span className={styles.tabDot} style={{
+                background: r?.status === "done" ? m.color : r?.status === "error" ? "#ff6060" : "transparent",
+                border: r?.status === "loading" ? `1.5px solid ${m.color}` : "none",
+                animation: r?.status === "loading" ? "spin 0.8s linear infinite" : "none",
+              }} />
+              {m.shortName}
+              {r?.status === "done"  && <span style={{ color: m.color,   fontSize: 10 }}>✓</span>}
+              {r?.status === "error" && <span style={{ color: "#ff6060", fontSize: 10 }}>✕</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className={styles.tabContent}>
+        {!activeResp || activeResp.status === "loading" ? (
+          <div className={styles.ldAnim}>
+            {[0, 1, 2].map((k) => (
+              <div key={k} className={styles.ld} style={{ background: `${activeModel?.color}90`, animationDelay: `${k * 0.18}s` }} />
+            ))}
+          </div>
+        ) : activeResp.status === "error" ? (
+          <div className={styles.rError}>{activeResp.content}</div>
+        ) : (
+          <div className={styles.tabBody}><Markdown content={activeResp.content} /></div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -204,6 +273,8 @@ export default function Home() {
   const [responses, setResponses] = useState<Record<string, ModelResponse>>({});
   const [synthesis, setSynthesis] = useState<SynthesisResult | null>(null);
   const [phase, setPhase]         = useState<"idle" | "querying" | "synthesizing" | "done">("idle");
+  const [queryKey, setQueryKey]   = useState(0);
+  const [mediatorId, setMediatorId] = useState("anthropic");
   const [error, setError]         = useState("");
   const [threads, setThreads]     = useState<Thread[]>([]);
   const [activeThread, setActiveThread] = useState<Thread | null>(null);
@@ -227,6 +298,7 @@ export default function Home() {
     setViewThread(null);
     setError(""); setResponses({}); setSynthesis(null); setPhase("querying");
     setQuestion(q); setCustomQ("");
+    setQueryKey((k) => k + 1);
 
     const init: Record<string, ModelResponse> = {};
     selModels.forEach((id) => { init[id] = { status: "loading", content: "" }; });
@@ -257,7 +329,7 @@ export default function Home() {
       try {
         const res = await fetch("/api/synthesize", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q, modelResponses: results }),
+          body: JSON.stringify({ question: q, modelResponses: results, mediatorId }),
         });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
@@ -304,6 +376,8 @@ export default function Home() {
 
   const isRunning = phase === "querying" || phase === "synthesizing";
 
+  const selectedMediator = MEDIATORS.find((m) => m.id === mediatorId) || MEDIATORS[0];
+
   const sidebar = (
     <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`}>
       <div className={styles.sidebarTop}>
@@ -333,7 +407,9 @@ export default function Home() {
         <span className={styles.logo}>coThink</span>
         <span className={styles.logoTag}>Multi-Model Reasoning</span>
       </div>
-      <div className={styles.mediatorTag}>mediator: Claude Sonnet 4</div>
+      <div className={styles.mediatorTag} style={{ color: selectedMediator.color, borderColor: `${selectedMediator.color}40`, background: `${selectedMediator.color}10` }}>
+        ✦ mediator: {selectedMediator.name}
+      </div>
     </header>
   );
 
@@ -403,7 +479,21 @@ export default function Home() {
               </div>
             </div>
 
-            {activeThread && (
+            {/* Mediator selector */}
+            <div className={styles.panel}>
+              <div className={styles.panelLabel}>Mediator — 종합 분석 모델</div>
+              <div className={styles.chips}>
+                {MEDIATORS.map((m) => {
+                  const on = mediatorId === m.id;
+                  return (
+                    <button key={m.id} className={styles.chip} onClick={() => setMediatorId(m.id)}
+                      style={{ borderColor: on ? m.color : "#151f30", color: on ? m.color : "#3a5270", background: on ? `${m.color}12` : "transparent" }}>
+                      {on && <span style={{ marginRight: 4 }}>✦</span>}{m.shortName}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
               <div className={styles.threadCtx}>
                 <span>쓰레드 {activeThread.turns.length}번째 질문 진행 중 — <em>{activeThread.title.slice(0, 40)}...</em></span>
                 <button onClick={newThread}>새 쓰레드</button>
@@ -432,31 +522,7 @@ export default function Home() {
             )}
 
             {Object.keys(responses).length > 0 && (
-              <div className={styles.rGrid}>
-                {selModels.map((id) => {
-                  const m = MODELS.find((x) => x.id === id)!;
-                  const r = responses[id];
-                  if (!r) return null;
-                  return (
-                    <div key={id} className={styles.rCard} style={{ border: `1px solid ${m.color}20` }}>
-                      <div className={styles.rHead}>
-                        <div className={styles.dot} style={{ background: m.color }} />
-                        <span className={styles.rName} style={{ color: m.color }}>{m.name}</span>
-                        <span className={styles.rStatus} style={{ color: r.status === "error" ? "#ff6060" : r.status === "done" ? "#2a4060" : "#3a5270" }}>
-                          {r.status === "loading" ? "..." : r.status}
-                        </span>
-                      </div>
-                      {r.status === "loading" ? (
-                        <div className={styles.ldAnim}>{[0, 1, 2].map((k) => <div key={k} className={styles.ld} style={{ background: `${m.color}90`, animationDelay: `${k * 0.18}s` }} />)}</div>
-                      ) : r.status === "error" ? (
-                        <div className={styles.rError}>{r.content}</div>
-                      ) : (
-                        <div className={styles.rBody}><Markdown content={r.content} /></div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              <ModelTabs selModels={selModels} responses={responses} queryKey={queryKey} />
             )}
 
             {synthesis && (

@@ -209,6 +209,17 @@
 .tbl td { padding: 5px 10px; border-bottom: 1px solid #0f1828; color: #9ab0cc; font-size: 12px; }
 .tbl tr:last-child td { border-bottom: none; }
 
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
+.tabContainer { margin-bottom: 20px; background: #0c1220; border: 1px solid #151f30; border-radius: 10px; overflow: hidden; }
+.tabBar { display: flex; border-bottom: 1px solid #131e2e; overflow-x: auto; }
+.tabBar::-webkit-scrollbar { height: 0; }
+.tabBtn { flex: 1; min-width: 90px; padding: 11px 10px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #3a5270; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
+.tabBtn:hover { color: #6a90b0; background: rgba(255,255,255,0.02); }
+.tabActive { color: #d8e4f0 !important; }
+.tabDot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.tabContent { padding: 20px 22px; min-height: 80px; }
+.tabBody { font-size: 13px; line-height: 1.7; color: #9ab0cc; }
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .layout { grid-template-columns: 0px 1fr; }
