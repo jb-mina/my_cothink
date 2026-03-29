@@ -10,26 +10,34 @@ export async function POST(req: NextRequest) {
     .map((r) => `[${r.name}]\n${r.content}`)
     .join("\n\n---\n\n");
 
-  const prompt = `You are a synthesis mediator. Multiple AI models answered the same question. Analyze their responses concisely.
+  const modelNames = (modelResponses as { name: string }[]).map((r) => r.name).join(", ");
+
+  const prompt = `You are a synthesis mediator. Multiple AI models answered the same question. Analyze their responses.
 
 Question: "${question}"
 
 Model Responses:
 ${formatted}
 
-Respond with ONLY valid JSON, no markdown, no backticks:
+Respond with ONLY valid JSON (no markdown, no backticks):
 {
-  "agreement": "What the models broadly agree on (2-3 sentences)",
-  "uniqueInsights": "Unique perspectives only 1-2 models provided (2-3 sentences)",
-  "contradictions": "Where models disagreed or gave conflicting info. Write '없음' if none.",
-  "bestAnswer": "The strongest synthesized answer integrating the best from all responses (3-5 sentences)",
-  "followUps": ["follow-up question 1 in Korean", "follow-up question 2 in Korean", "follow-up question 3 in Korean"]
-}`;
+  "agreement": "What the models broadly agree on (2-3 sentences in Korean)",
+  "uniqueInsights": "Unique perspectives only 1-2 models provided (2-3 sentences in Korean)",
+  "contradictions": "Where models disagreed or gave conflicting info. Write '없음' if none. (Korean)",
+  "bestAnswer": "The strongest synthesized answer integrating the best from all responses (3-5 sentences in Korean)",
+  "attributions": {
+    "[Model Name]": "이 모델이 종합 답변에 기여한 핵심 내용 (1줄, Korean)"
+  },
+  "followUps": ["후속 질문 1 (Korean)", "후속 질문 2 (Korean)", "후속 질문 3 (Korean)"]
+}
+
+For attributions, use these exact model names where relevant: ${modelNames}
+Only include models whose response meaningfully contributed to the bestAnswer. Omit models with errors or minimal contribution.`;
 
   try {
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
+      max_tokens: 1200,
       messages: [{ role: "user", content: prompt }],
     });
 
