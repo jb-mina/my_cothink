@@ -1,5 +1,0 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #07090f; color: #d8e4f0; font-family: 'IBM Plex Sans', sans-serif; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #07090f; }
-::-webkit-scrollbar-thumb { background: #1e2e44; border-radius: 3px; }
