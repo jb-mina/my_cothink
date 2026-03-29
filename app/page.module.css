@@ -1,0 +1,66 @@
+.page { min-height: 100vh; background: #07090f; color: #d8e4f0; font-family: 'IBM Plex Sans', sans-serif; }
+
+.header { padding: 20px 32px; border-bottom: 1px solid #131e2e; display: flex; align-items: center; justify-content: space-between; }
+.logo { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #f5c842; letter-spacing: -0.5px; }
+.logoTag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #3a5270; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+.mediatorTag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #42c8a0; background: rgba(66,200,160,0.08); border: 1px solid rgba(66,200,160,0.2); padding: 4px 12px; border-radius: 20px; }
+
+.main { max-width: 1080px; margin: 0 auto; padding: 28px 32px; }
+
+.panel { background: #0c1220; border: 1px solid #151f30; border-radius: 10px; padding: 18px; margin-bottom: 20px; }
+.panelLabel { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #3a5270; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid; transition: all 0.15s; user-select: none; font-family: 'IBM Plex Sans', sans-serif; background: transparent; }
+
+.qWrap { margin-bottom: 20px; }
+.qInput { width: 100%; background: #0c1220; border: 1px solid #151f30; border-radius: 10px; padding: 16px 18px; color: #d8e4f0; font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; line-height: 1.6; outline: none; resize: vertical; min-height: 88px; transition: border-color 0.2s; }
+.qInput:focus { border-color: rgba(245, 200, 66, 0.4); }
+.qInput::placeholder { color: #2e4260; }
+.qActions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.runBtn { padding: 10px 28px; background: #f5c842; color: #07090f; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; border: none; border-radius: 7px; cursor: pointer; transition: all 0.15s; }
+.runBtn:hover:not(:disabled) { background: #f8d35e; transform: translateY(-1px); }
+.runBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.resetBtn { padding: 8px 16px; background: transparent; border: 1px solid #151f30; border-radius: 7px; color: #3a5270; font-size: 12px; cursor: pointer; font-family: 'IBM Plex Mono', monospace; transition: all 0.15s; }
+.resetBtn:hover { border-color: #2a3f5a; color: #5a7090; }
+.hint { font-size: 10px; color: #2a3f5a; font-family: 'IBM Plex Mono', monospace; margin-left: auto; }
+
+.phaseBar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: #0c1220; border-radius: 7px; margin-bottom: 18px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #42c8a0; border: 1px solid #0f2030; }
+.spin { width: 12px; height: 12px; border: 1.5px solid #0f2030; border-top-color: #42c8a0; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.errorBox { padding: 10px 14px; background: rgba(255,80,80,0.07); border: 1px solid rgba(255,80,80,0.2); border-radius: 7px; color: #ff7070; font-size: 12px; margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
+
+.responsesGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.rCard { background: #0c1220; border-radius: 9px; overflow: hidden; display: flex; flex-direction: column; }
+.rHead { padding: 10px 14px; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid #0f1a28; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.rName { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; }
+.rStatus { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px; }
+.rBody { padding: 14px; font-size: 13px; line-height: 1.72; color: #9ab0cc; flex: 1; white-space: pre-wrap; word-break: break-word; }
+.rError { padding: 14px; font-size: 12px; line-height: 1.6; color: #ff7070; font-family: 'IBM Plex Mono', monospace; word-break: break-all; }
+.loadingAnim { display: flex; gap: 5px; padding: 20px 14px; }
+.ld { width: 5px; height: 5px; border-radius: 50%; animation: ld 1.2s infinite; }
+@keyframes ld { 0%,100% { opacity: 0.2; transform: scale(0.7); } 50% { opacity: 1; transform: scale(1); } }
+
+.synthCard { background: #0a1220; border: 1px solid #1a2e44; border-radius: 12px; padding: 24px; position: relative; overflow: hidden; }
+.synthCard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #42c8a0 0%, #4285f4 50%, #f5c842 100%); }
+.synthTag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #42c8a0; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.synthTag::after { content: ''; flex: 1; height: 1px; background: #1a2e44; }
+.analysisGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+.aTitle { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #3a5270; margin-bottom: 7px; }
+.aText { font-size: 13px; line-height: 1.7; color: #a0b8cc; }
+.divider { border: none; border-top: 1px solid #131e2e; margin: 18px 0; }
+.bestLabel { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #f5c842; margin-bottom: 10px; }
+.bestBox { background: #0e1828; border: 1px solid #1e3050; border-radius: 8px; padding: 16px; font-size: 14px; line-height: 1.75; color: #d0e0ef; }
+.followupSection { margin-top: 18px; }
+.fuLabel { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #3a5270; margin-bottom: 10px; }
+.fuList { display: flex; flex-direction: column; gap: 7px; }
+.fuBtn { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; background: transparent; border: 1px solid #131e2e; border-radius: 8px; color: #7a98b4; font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; text-align: left; cursor: pointer; transition: all 0.15s; width: 100%; }
+.fuBtn:hover { border-color: #f5c842; color: #f5c842; background: rgba(245,200,66,0.04); }
+.fuArrow { color: #f5c842; flex-shrink: 0; font-size: 12px; margin-top: 1px; }
+
+@media (max-width: 640px) {
+  .analysisGrid { grid-template-columns: 1fr; }
+  .main { padding: 20px 16px; }
+  .header { padding: 16px; }
+}
