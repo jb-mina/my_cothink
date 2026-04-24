@@ -89,7 +89,10 @@ export default function LandingPage() {
             <button className={styles.navLink} onClick={() => scrollTo("use")}>활용 사례</button>
             <button className={styles.navLink} onClick={() => scrollTo("models")}>지원 모델</button>
           </div>
-          <button className={styles.navCta} onClick={() => openModal()}>초대장 받기</button>
+          <div className={styles.navActions}>
+            <a className={styles.navLogin} href="/login">로그인</a>
+            <button className={styles.navCta} onClick={() => openModal()}>초대장 받기</button>
+          </div>
         </div>
       </nav>
 
