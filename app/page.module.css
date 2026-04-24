@@ -159,7 +159,29 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .app { grid-template-columns: 0px 1fr; }
+  .app { grid-template-columns: 0 1fr; }
+
+  .sb {
+    position: fixed;
+    top: 0; left: 0;
+    width: min(300px, 85vw);
+    height: 100vh;
+    z-index: 50;
+    opacity: 1;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, .5);
+    transition: transform .25s ease;
+  }
+  .sbClosed { transform: translateX(-100%); pointer-events: none; }
+  .sbOpen   { transform: translateX(0);     pointer-events: auto; }
+
+  .app[data-sb="1"] .sbtg {
+    position: fixed;
+    top: 12px;
+    left: calc(min(300px, 85vw) + 8px);
+    z-index: 60;
+    background: var(--bg);
+  }
+
   .sg { grid-template-columns: 1fr; }
   .ses { padding: 16px; }
   .tvhdr { padding: 16px 16px 0; }
