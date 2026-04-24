@@ -16,7 +16,7 @@ type Thread = { id: string; title: string; createdAt: number; turns: Turn[] };
 const MODELS = [
   { id: "openai/gpt-4o",                name: "GPT-4o",               short: "ChatGPT",    color: "#10a37f" },
   { id: "google/gemini-3-flash-preview", name: "Gemini 3 Flash",       short: "Gemini",     color: "#4285f4" },
-  { id: "anthropic/claude-3.5-sonnet",  name: "Claude 3.5 Sonnet",    short: "Claude",     color: "#d4954a" },
+  { id: "anthropic/claude-sonnet-4.5",  name: "Claude Sonnet 4.5",    short: "Claude",     color: "#d4954a" },
   { id: "perplexity/sonar-pro",         name: "Perplexity Sonar Pro", short: "Perplexity", color: "#20b2aa" },
   { id: "x-ai/grok-4.1-fast",          name: "Grok 4.1 Fast",        short: "Grok",       color: "#e8562a" },
 ];
