@@ -53,7 +53,7 @@ Available model names: ${modelNames}. Only include in attributions if meaningful
       if (!apiKey) return NextResponse.json({ error: "OPENROUTER_API_KEY missing" }, { status: 500 });
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "HTTP-Referer": "https://cothink.vercel.app", "X-Title": "coThink" },
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "HTTP-Referer": "https://getcothink.com", "X-Title": "coThink" },
         body: JSON.stringify({ model: mediatorId, messages: [{ role: "user", content: prompt }], max_tokens: 1200 }),
       });
       const data = await res.json();
