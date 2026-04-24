@@ -1,12 +1,24 @@
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase";
 import { approveInvitation } from "@/lib/invitation";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
+function requireAdmin() {
+  const pw = process.env.APP_PASSWORD || "";
+  const cookie = cookies().get("cothink_auth")?.value;
+  if (!pw || cookie !== pw) redirect("/login");
+}
+
 async function approveAction(formData: FormData) {
   "use server";
+  const pw = process.env.APP_PASSWORD || "";
+  const cookie = cookies().get("cothink_auth")?.value;
+  if (!pw || cookie !== pw) throw new Error("unauthorized");
+
   const email = String(formData.get("email") || "").trim().toLowerCase();
   if (!email) return;
   await approveInvitation(email);
@@ -14,6 +26,7 @@ async function approveAction(formData: FormData) {
 }
 
 export default async function AdminPage() {
+  requireAdmin();
   const supabase = supabaseServer();
   const { data: pending } = await supabase
     .from("invitations")
