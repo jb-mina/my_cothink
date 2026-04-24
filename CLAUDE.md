@@ -92,6 +92,13 @@ type Syn = {
 - ESLint는 devDependency에 포함되어 있지 않고 설정 파일(`.eslintrc*`)도 없다
 - 큰 변경 후에는 `npx tsc --noEmit`을 수동 실행해 검증한다
 
+## 변경 반영 정책 (브랜치 · PR)
+
+- **문서·설정** (`*.md`, `.gitignore`, `.env.local.example` 등) — `main`에 직접 커밋·푸시. PR 생략.
+- **코드** (`app/`, `middleware.ts`, `next.config.js`, `package.json` 등) — 세션에 할당된 feature 브랜치(`claude/...`)에 커밋·푸시 → **PR 생성** → 사용자가 GitHub 웹에서 diff 리뷰 후 머지.
+
+테스트 스위트·ESLint가 없어 코드 회귀를 기계적으로 잡을 수 없다. PR diff 리뷰가 유일한 안전장치다.
+
 ## 알려진 제약 — 고치지 말 것 (지금은)
 
 아래는 "버그"가 아니라 **의도된 범위 축소**다. 요청 없이 자발적으로 고치지 말 것:
