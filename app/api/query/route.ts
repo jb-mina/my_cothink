@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { modelId, question } = await req.json();
+  const { modelId, question, history } = await req.json();
 
   if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json({ error: "OPENROUTER_API_KEY not configured" }, { status: 500 });
   }
+
+  const messages: { role: "user" | "assistant"; content: string }[] = [];
+  for (const h of Array.isArray(history) ? history : []) {
+    if (typeof h?.question === "string" && typeof h?.answer === "string") {
+      messages.push({ role: "user", content: h.question });
+      messages.push({ role: "assistant", content: h.answer });
+    }
+  }
+  messages.push({ role: "user", content: question });
 
   try {
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -18,7 +27,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: modelId,
-        messages: [{ role: "user", content: question }],
+        messages,
         max_tokens: 800,
       }),
     });

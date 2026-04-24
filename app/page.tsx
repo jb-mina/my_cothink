@@ -28,6 +28,8 @@ const MEDIATORS = [
   { id: "perplexity/sonar-pro",         short: "Perplexity", name: "Perplexity Sonar Pro", color: "#20b2aa" },
 ];
 
+const HISTORY_LIMIT = 3;
+
 // ── Storage ───────────────────────────────────────────────────────────────────
 const SK = "cothink_v1";
 const loadAll = (): Thread[] => { try { return JSON.parse(localStorage.getItem(SK) || "[]"); } catch { return []; } };
@@ -320,11 +322,20 @@ export default function Home() {
     const init: Record<string, MR> = {};
     sel.forEach(id => { init[id] = { status: "loading", content: "" }; });
     setResp(init);
+
+    const priorTurns = (tref.current?.turns ?? []).slice(-HISTORY_LIMIT);
+
     const results: { id: string; name: string; content: string }[] = [];
     await Promise.allSettled(sel.map(async id => {
       const mo = MODELS.find(m => m.id === id); if (!mo) return;
+      const history = priorTurns
+        .map(t => {
+          const r = t.responses[id];
+          return r?.content ? { question: t.question, answer: r.content } : null;
+        })
+        .filter((h): h is { question: string; answer: string } => h !== null);
       try {
-        const res = await fetch("/api/query", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modelId: id, question: tq }) });
+        const res = await fetch("/api/query", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modelId: id, question: tq, history }) });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setResp(p => ({ ...p, [id]: { status: "done", content: data.content || "" } }));
@@ -335,8 +346,11 @@ export default function Home() {
     }));
     if (!results.length) { setErr("모든 모델 호출 실패"); setPhase("done"); return; }
     setPhase("s");
+    const synthHistory = priorTurns
+      .filter(t => t.synthesis?.bestAnswer)
+      .map(t => ({ question: t.question, bestAnswer: t.synthesis!.bestAnswer }));
     try {
-      const res = await fetch("/api/synthesize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: tq, modelResponses: results, mediatorId: mid }) });
+      const res = await fetch("/api/synthesize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question: tq, modelResponses: results, mediatorId: mid, history: synthHistory }) });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setSynth(data);

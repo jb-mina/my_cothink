@@ -5,7 +5,7 @@ const anthropic = new Anthropic();
 
 export async function POST(req: NextRequest) {
   try {
-    const { question, modelResponses, mediatorId = "anthropic" } = await req.json();
+    const { question, modelResponses, mediatorId = "anthropic", history } = await req.json();
 
     const formatted = modelResponses
       .map((r: { name: string; content: string }) => `[${r.name}]\n${r.content}`)
@@ -13,8 +13,15 @@ export async function POST(req: NextRequest) {
 
     const modelNames = modelResponses.map((r: { name: string }) => r.name).join(", ");
 
-    const prompt = `You are a synthesis mediator. Multiple AI models answered the same question.
+    const historyBlock = Array.isArray(history) && history.length
+      ? `\nPrior conversation in this thread (oldest first). Use this context when interpreting the current question:\n${history
+          .map((h: { question: string; bestAnswer: string }, i: number) =>
+            `[Turn ${i + 1}]\nQ: ${h.question}\nPrevious synthesized answer: ${h.bestAnswer}`)
+          .join("\n\n")}\n`
+      : "";
 
+    const prompt = `You are a synthesis mediator. Multiple AI models answered the same question.
+${historyBlock}
 Question: "${question}"
 
 Model Responses:
