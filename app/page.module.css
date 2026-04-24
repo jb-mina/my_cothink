@@ -159,7 +159,9 @@
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .app { grid-template-columns: 1fr; }
+  .app,
+  .app[data-sb="0"],
+  .app[data-sb="1"] { grid-template-columns: 1fr; }
 
   .sb {
     position: fixed;
