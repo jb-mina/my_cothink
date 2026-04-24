@@ -39,7 +39,7 @@ git push -u origin main
 
 ### 4. Deploy
 
-→ 완료. `https://cothink-xxx.vercel.app` 로 접근 가능.
+→ 완료. `https://getcothink.com` 로 접근 가능.
 
 ---
 

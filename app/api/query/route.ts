@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://cothink.vercel.app",
+        "HTTP-Referer": "https://getcothink.com",
         "X-Title": "coThink",
       },
       body: JSON.stringify({
