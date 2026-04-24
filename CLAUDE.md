@@ -14,28 +14,76 @@ npm run start   # 프로덕션 실행
 
 ## 필수 환경 변수
 
+### 핵심 API
 - `OPENROUTER_API_KEY` — OpenRouter 경유 모델 호출
 - `ANTHROPIC_API_KEY` — 기본 중재자(Claude Sonnet 4) 직접 호출
-- `APP_PASSWORD` — 앱 로그인 비밀번호 (평문 비교)
+- `APP_PASSWORD` — 관리자 로그인 비밀번호 (평문 비교, `/admin` 접근 쿠키 정확 일치용)
 
-셋 중 하나라도 누락되면 해당 엔드포인트가 **요청 시점에 500 에러**로 실패하고 UI에 에러 박스가 뜬다. 새 환경 세팅 시 `.env.local`부터 확인한다.
+### 초대 시스템 (PR-B 이후)
+- `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` — `invitations` 테이블 접근용 서비스 롤 클라이언트 (`lib/supabase.ts`). 클라이언트 번들에 노출하지 말 것 (`NEXT_PUBLIC_` 금지).
+- `RESEND_API_KEY` — 초대 코드·관리자 알림 메일 발송
+- `RESEND_FROM_EMAIL` — 발신 주소 (기본값 `onboarding@resend.dev`. 도메인 인증 시 `noreply@getcothink.com` 등)
+- `ADMIN_EMAIL` — 신규 초대 요청 알림 수신 주소 (생략 시 관리자 알림만 스킵되고 요청 자체는 정상 처리)
+
+핵심 API 키 누락 시 해당 엔드포인트는 **요청 시점에 500 에러**로 실패한다. 초대 시스템 키 누락 시 `/api/invitation-request`·`/api/login` 코드 경로·`/admin` 승인이 실패한다. 새 환경 세팅은 `.env.local.example` 기준.
 
 ## 아키텍처 핵심
 
 - **Next.js 14.2.5 App Router + TypeScript 5**. Pages Router는 쓰지 않는다.
-- **백엔드는 stateless**. DB 없음. 스레드는 전부 브라우저 `localStorage`에 저장된다 (key: `cothink_v1`, 최대 50개).
-- **인증은 단일 공유 비밀번호**. httpOnly 쿠키(`cothink_auth`, 30일). 사용자 계정·세션 개념이 **없다** — "사용자별 데이터"를 암시하는 기능을 추가하지 말 것.
-- 스타일은 현재 **CSS Modules만** 사용 중 (`app/page.module.css`). Tailwind/styled-components 설정은 존재하지 않는다.
+- **메인 앱 백엔드는 stateless**. 스레드는 브라우저 `localStorage`에 저장된다 (key: `cothink_v1`, 최대 50개). 초대 시스템만 Supabase를 쓴다 — **앱 데이터용 DB가 아니다**.
+- **인증은 두 가지 역할**. httpOnly 쿠키(`cothink_auth`, 30일)의 값으로 구분:
+  - `APP_PASSWORD`와 정확히 일치 → **admin** (`/admin` 접근 가능)
+  - `u:<CODE>` 형식 → **user** (초대 코드 로그인)
+  - 그 외 → **none**
+  쿠키 값은 아직 서명되지 않는다 — JWT 이관은 후속 PR-D 예정. 사용자별 데이터 저장은 **여전히 없음** (스레드는 브라우저 로컬).
+- **배포 도메인**: `getcothink.com` (Vercel).
+- **스타일 정책**:
+  - 메인 앱(`app/page.tsx`) — CSS Modules (`app/page.module.css`), `globals.css`의 amber 팔레트 사용
+  - 랜딩(`app/landing/`) — CSS Modules, 단 로컬 팔레트 토큰(`--cream`·`--accent: #d96628`·`--ink` 등)을 **`.page` 스코프**로 정의. `globals.css`의 amber와 섞지 말 것
+  - 로그인(`app/login/page.tsx`) — 인라인 스타일 + 랜딩과 동일한 크림/오렌지 팔레트 (폰트는 `var(--font-*)` 전역 토큰)
+  - 관리자(`app/admin/`) — CSS Modules (`app/admin/page.module.css`)
+  - Tailwind/styled-components 설정은 존재하지 않는다.
 
 ## 미들웨어 동작 (주의)
 
-`middleware.ts`의 matcher는 `_next/static`, `_next/image`, `favicon.ico`만 제외한다. `/api/*`와 `/login`도 matcher에 포함되어 미들웨어가 실행되지만, **함수 내부 early-return**으로 통과시킨다:
+`middleware.ts`의 matcher는 `_next/static`, `_next/image`, `favicon.ico`만 제외하고 나머지 전부에 실행된다. 함수 내부는 다음 순서로 분기:
 
-- `/api/*` — line 7에서 즉시 `NextResponse.next()`
-- `/login` POST — line 14에서 통과 (로그인 폼 제출)
-- 그 외 — 쿠키 검증 실패 시 `/login`으로 리디렉션
+1. `/api/*` → 즉시 통과. 개별 라우트가 필요 시 인증을 직접 처리. `/api/login`·`/api/invitation-request`는 공개, `/api/query`·`/api/synthesize`는 **아직 미보호** (JWT 도입 후 PR-D에서 잠글 예정).
+2. `/landing` → 항상 공개
+3. `/login` → 항상 공개
+4. 쿠키 역할(`role()`) 분류: admin / user / none
+5. `/admin` → admin만 통과. user면 `/`로, none이면 `/landing`으로 리다이렉트. **추가로 `app/admin/page.tsx`의 `requireAdmin()`이 렌더 시 재검증하고, `approveAction` 서버 액션 내부에서도 쿠키를 재검증**한다 (서버 액션은 외부에서 직접 POST 가능하므로 미들웨어만 믿으면 안 됨).
+6. `/` → role=none이면 `/landing`으로 **rewrite**(URL `/` 유지). admin/user는 메인 앱 통과.
+7. 그 외 경로 → role=none이면 `/landing` redirect, 아니면 통과.
 
-새 경로를 추가할 때 matcher만 보고 판단하면 안 된다. 함수 내부 분기도 같이 본다.
+새 경로·권한을 추가할 때 matcher만 보고 판단하면 안 된다. 함수 내부 분기와 페이지·서버 액션의 재검증까지 세트로 관리한다.
+
+## 초대 시스템 — 접근 제어
+
+**플로우**: 랜딩(`/` 또는 `/landing`) 이메일 제출 → Supabase `invitations`에 `status=pending` → 관리자(`/admin`, `APP_PASSWORD` 로그인)가 승인 → `lib/invitation.ts#approveInvitation`이 10자리 코드 생성·DB 업데이트·Resend 메일 발송 → 사용자가 `/login`에 코드 입력 → `cothink_auth=u:<CODE>` 쿠키 발급 → 메인 앱 진입.
+
+**Supabase `invitations` 스키마**:
+```
+email        text primary key
+status       text  -- 'pending' | 'approved' | 'rejected'
+code         text unique
+requested_at timestamptz default now()
+approved_at  timestamptz
+```
+
+**핵심 파일**:
+- `lib/supabase.ts` — `supabaseServer()` 서비스 롤 클라이언트. 서버 전용.
+- `lib/invitation.ts` — `generateCode()`(대문자 알파벳 32자에서 10자 샘플), `approveInvitation(email)`, `sendInvitationEmail`, `sendAdminNotification`.
+- `app/api/invitation-request/route.ts` — 공개 POST `{email}`. 중복·승인 이력 구분 응답.
+- `app/api/login/route.ts` — `{value}` 단일 필드. admin 경로는 정확 일치, user 경로는 `.toUpperCase()` 정규화 후 `status='approved'` 코드 조회.
+- `app/admin/page.tsx` — Server Component + Server Action (`approveAction`). 페이지·액션 양쪽에서 쿠키 재검증.
+- `app/landing/page.tsx` — 이메일 제출 3지점(hero CTA 모달·final CTA 인라인·푸터 링크). 모두 `/api/invitation-request` 호출.
+
+**건드릴 때 주의**:
+- 코드 알파벳을 바꾸면 로그인 정규화와 달라져 기존 승인 코드가 거부될 수 있다.
+- 서버 액션(`approveAction`)은 미들웨어 외에 **함수 내부에서 반드시 `cookies().get('cothink_auth')` 재검증** — 외부 POST로 우회 가능.
+- Supabase 서비스 롤 키는 **서버 전용**. 클라이언트 컴포넌트·`NEXT_PUBLIC_` 접두사로 노출 금지.
+- Resend 도메인 인증 전에는 기본 발신(`onboarding@resend.dev`)로 동작. `getcothink.com` DKIM/SPF 추가 후 `RESEND_FROM_EMAIL` 교체.
 
 ## 중재자 분기 로직 (주의)
 
@@ -103,18 +151,29 @@ type Syn = {
 
 아래는 "버그"가 아니라 **의도된 범위 축소**다. 요청 없이 자발적으로 고치지 말 것:
 
-- Rate limiting 없음
+- Rate limiting 없음 (`/api/invitation-request`·`/api/login` 포함)
 - 스트리밍 응답 없음 (Phase 1→2가 전체 응답 대기)
 - 실패한 모델 호출 재시도 없음
 - 스레드 서버 저장 없음
+- **JWT 미적용 — 쿠키 값 신뢰 기반 인증**. 위조 위험은 `/admin`에 한해 `APP_PASSWORD` 정확 일치로 방어, `/api/query`·`/api/synthesize`는 아직 공개. 서명 쿠키 이관은 후속 PR-D 예정.
 
 ## 검증 방식
 
 자동화된 테스트가 없다. 기능 변경 후에는:
 
+**메인 앱 회귀 체크**
+
 1. `npm run dev`로 로컬 실행
-2. 로그인 → 모델 2개 이상 선택 → 질문 → 종합 결과 JSON 파싱 확인
+2. 로그인(코드 또는 `APP_PASSWORD`) → 모델 2개 이상 선택 → 질문 → 종합 결과 JSON 파싱 확인
 3. 후속 질문 클릭 → 스레드 누적 확인
 4. 브라우저 DevTools에서 `localStorage["cothink_v1"]`이 `Thread[]` 구조인지 확인
+
+**초대 플로우 회귀 체크** (인증·랜딩·초대 시스템 관련 변경 시)
+
+5. 쿠키 비운 브라우저로 `/` 접속 → URL 유지된 채 랜딩이 보이는지 확인(미들웨어 rewrite)
+6. 랜딩 이메일 제출 → Supabase `invitations`에 `status=pending` 레코드 생성 확인
+7. `cothink_auth=<APP_PASSWORD>` 쿠키 수동 설정 후 `/admin` → pending 목록에서 승인 → Resend 대시보드에서 코드 메일 발송 확인
+8. `/login`에 코드 입력(대소문자 섞어도 통과해야 함) → `/` 메인 앱 진입 → 쿠키 값이 `u:<CODE>` 형식인지 확인
+9. user 쿠키 상태에서 `/admin` 접근 시 `/`로 리다이렉트되는지 확인
 
 제품 스펙·사용자 플로우는 [1pager.md](./1pager.md) 참조.
