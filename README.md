@@ -1,6 +1,6 @@
 # coThink
 
-Multi-Model Reasoning Environment — 여러 AI 모델에 동시 질의하고, Claude가 종합 분석합니다.
+Multi-Model Reasoning Environment — 여러 AI 모델에 동시 질의해 답변을 받고, 선택된 한 모델이 종합 분석해 결과를 요약,제시합니다.
 
 ## 로컬 실행
 
