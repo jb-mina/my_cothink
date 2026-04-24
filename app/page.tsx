@@ -16,7 +16,7 @@ type Thread = { id: string; title: string; createdAt: number; turns: Turn[] };
 const MODELS = [
   { id: "openai/gpt-4o",                name: "GPT-4o",               short: "ChatGPT",    color: "#10a37f" },
   { id: "google/gemini-3-flash-preview", name: "Gemini 3 Flash",       short: "Gemini",     color: "#4285f4" },
-  { id: "anthropic/claude-3.5-sonnet",  name: "Claude 3.5 Sonnet",    short: "Claude",     color: "#d4954a" },
+  { id: "anthropic/claude-sonnet-4.5",  name: "Claude Sonnet 4.5",    short: "Claude",     color: "#d4954a" },
   { id: "perplexity/sonar-pro",         name: "Perplexity Sonar Pro", short: "Perplexity", color: "#20b2aa" },
   { id: "x-ai/grok-4.1-fast",          name: "Grok 4.1 Fast",        short: "Grok",       color: "#e8562a" },
 ];
@@ -112,13 +112,19 @@ function MD({ c }: { c: string }) {
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-function Tabs({ sel, resp, qk }: { sel: string[]; resp: Record<string, MR>; qk: number }) {
-  const [active, setActive] = useState(0);
-  useEffect(() => { setActive(0); }, [qk]);
+function Tabs({ sel, resp, qk, activeIdx, setActiveIdx }: {
+  sel: string[]; resp: Record<string, MR>; qk: number;
+  activeIdx?: number; setActiveIdx?: (i: number) => void;
+}) {
+  const [localActive, setLocalActive] = useState(0);
+  const active = activeIdx !== undefined ? activeIdx : localActive;
+  const setActive = setActiveIdx ?? setLocalActive;
+  useEffect(() => { if (activeIdx === undefined) setLocalActive(0); }, [qk]); // eslint-disable-line
   const statusKey = sel.map(id => resp[id]?.status ?? "").join(",");
   useEffect(() => {
+    if (activeIdx !== undefined) return;
     const first = sel.findIndex(id => resp[id]?.status === "done");
-    if (first >= 0) setActive(first);
+    if (first >= 0) setLocalActive(first);
   }, [statusKey]); // eslint-disable-line
   const id = sel[active] || "";
   const mo = MODELS.find(x => x.id === id);
@@ -161,13 +167,16 @@ function Tabs({ sel, resp, qk }: { sel: string[]; resp: Record<string, MR>; qk: 
 }
 
 // ── Synthesis ─────────────────────────────────────────────────────────────────
-function SynthPanel({ s, onFU, cq, setCQ, onCS, compact }: {
+function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
   s: Syn; onFU: (q: string) => void;
   cq?: string; setCQ?: (v: string) => void; onCS?: () => void; compact?: boolean;
+  onAttrClick?: (name: string) => void;
 }) {
   return (
     <div className={compact ? styles.sc2 : styles.sc}>
       <div className={styles.stag}>✦ Mediator Synthesis</div>
+      <div className={styles.bl}>종합 답변</div>
+      <div className={styles.bb}><MD c={s.bestAnswer} /></div>
       <div className={styles.sg}>
         <div><div className={styles.sl}>공통된 관점</div><div className={styles.st}><MD c={s.agreement} /></div></div>
         <div><div className={styles.sl}>고유한 인사이트</div><div className={styles.st}><MD c={s.uniqueInsights} /></div></div>
@@ -178,17 +187,22 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact }: {
           <div className={`${styles.st} ${styles.warn}`}><MD c={s.contradictions} /></div>
         </div>
       )}
-      <hr className={styles.hr} />
       {Object.keys(s.attributions || {}).length > 0 && (
-        <div style={{ marginBottom: 16 }}>
-          <div className={styles.sl}>모델별 기여</div>
+        <div style={{ marginBottom: 4 }}>
+          <div className={styles.sl}>모델별 기여 {onAttrClick && <span style={{ textTransform: "none", letterSpacing: 0, fontSize: 10, color: "var(--fg-muted)", marginLeft: 6 }}>(클릭하면 해당 모델 답변으로 이동)</span>}</div>
           <div className={styles.alist}>
             {Object.entries(s.attributions).map(([name, note]) => {
               const m = MODELS.find(x => x.name === name || x.short === name);
               const c = m?.color || "#5a7090";
               return (
                 <div key={name} className={styles.aitem}>
-                  <span className={styles.abadge} style={{ color: c, borderColor: `${c}50`, background: `${c}12` }}>{name}</span>
+                  <button
+                    type="button"
+                    className={styles.abadge}
+                    style={{ color: c, borderColor: `${c}60`, background: `${c}12` }}
+                    onClick={() => onAttrClick?.(name)}
+                    disabled={!onAttrClick || !m}
+                  >{name}</button>
                   <span className={styles.anote}>{note}</span>
                 </div>
               );
@@ -196,8 +210,6 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact }: {
           </div>
         </div>
       )}
-      <div className={styles.bl}>∷ 종합 답변</div>
-      <div className={styles.bb}><MD c={s.bestAnswer} /></div>
       <div className={styles.fus}>
         <div className={styles.fl}>제안 후속 질문</div>
         {(s.followUps || []).map((q, i) => (
@@ -207,7 +219,7 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact }: {
         ))}
         {!compact && setCQ && (
           <>
-            <div className={styles.fl} style={{ marginTop: 12 }}>직접 입력</div>
+            <div className={styles.fl} style={{ marginTop: 14 }}>직접 입력</div>
             <div className={styles.crow}>
               <input className={styles.ci} placeholder="후속 질문을 직접 입력하세요..."
                 value={cq || ""} onChange={e => setCQ(e.target.value)}
@@ -217,6 +229,57 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact }: {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Thread turn block (synthesis first + collapsible individual answers) ─────
+function TurnBlock({ turn, showQBadge, qIdx, onFollowUp }: {
+  turn: Turn; showQBadge: boolean; qIdx: number;
+  onFollowUp: (q: string) => void;
+}) {
+  const detRef = useRef<HTMLDetailsElement>(null);
+  const responseIds = Object.keys(turn.responses).filter(id => MODELS.find(m => m.id === id));
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const handleAttrClick = (name: string) => {
+    const m = MODELS.find(x => x.name === name || x.short === name);
+    if (!m) return;
+    const idx = responseIds.indexOf(m.id);
+    if (idx < 0) return;
+    setActiveIdx(idx);
+    if (detRef.current) {
+      detRef.current.open = true;
+      setTimeout(() => detRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60);
+    }
+  };
+
+  const respMap: Record<string, MR> = Object.fromEntries(
+    responseIds.map(id => [id, { status: "done" as const, content: turn.responses[id].content }])
+  );
+
+  return (
+    <div className={styles.tblk}>
+      <div className={styles.tq}>
+        {showQBadge && <span className={styles.tqn}>Q{qIdx + 1}</span>}
+        <span>{turn.question}</span>
+      </div>
+      {turn.synthesis && (
+        <SynthPanel
+          s={turn.synthesis}
+          onFU={onFollowUp}
+          compact
+          onAttrClick={handleAttrClick}
+        />
+      )}
+      {responseIds.length > 0 && (
+        <details ref={detRef} className={styles.detWrap}>
+          <summary className={styles.detSum}>개별 모델 답변 ({responseIds.length}개)</summary>
+          <div className={styles.detBody}>
+            <Tabs sel={responseIds} resp={respMap} qk={qIdx} activeIdx={activeIdx} setActiveIdx={setActiveIdx} />
+          </div>
+        </details>
+      )}
     </div>
   );
 }
@@ -236,6 +299,8 @@ export default function Home() {
   const [aThread, setAThread] = useState<Thread | null>(null);
   const [vThread, setVThread] = useState<Thread | null>(null);
   const [sbOpen, setSbOpen] = useState(true);
+  const [searchQ, setSearchQ] = useState("");
+  const openThread = (t: Thread) => { setVThread(t); setSbOpen(false); };
   const sref = useRef<HTMLDivElement>(null);
   const tref = useRef<Thread | null>(null);
 
@@ -297,15 +362,29 @@ export default function Home() {
 
   const isRunning = phase === "q" || phase === "s";
 
+  const filteredThreads = searchQ.trim()
+    ? threads.filter(t => t.title.toLowerCase().includes(searchQ.trim().toLowerCase()))
+    : threads;
   const sidebar = (
     <aside className={`${styles.sb} ${sbOpen ? styles.sbOpen : styles.sbClosed}`}>
-      <div className={styles.sbtop}><button className={styles.newbtn} onClick={newT}>＋ 새 탐구</button></div>
+      <div className={styles.sbtop}>
+        <button className={styles.newbtn} onClick={newT}>＋ 새 탐구</button>
+        {threads.length > 0 && (
+          <input
+            className={styles.search}
+            placeholder="제목 검색..."
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+          />
+        )}
+      </div>
       <div className={styles.tlist}>
         {threads.length === 0 && <div className={styles.empty}>저장된 탐구가 없어요</div>}
-        {threads.map(t => {
+        {threads.length > 0 && filteredThreads.length === 0 && <div className={styles.empty}>검색 결과 없음</div>}
+        {filteredThreads.map(t => {
           const isA = t.id === (vThread?.id || aThread?.id || "");
           return (
-            <div key={t.id} className={`${styles.ti} ${isA ? styles.tiA : ""}`} onClick={() => setVThread(t)}>
+            <div key={t.id} className={`${styles.ti} ${isA ? styles.tiA : ""}`} onClick={() => openThread(t)}>
               <div className={styles.tt}>{t.title}</div>
               <div className={styles.tm}>{t.turns.length}턴 · {new Date(t.createdAt).toLocaleDateString("ko")}</div>
               <button className={styles.del} onClick={e => delT(t.id, e)}>×</button>
@@ -331,26 +410,25 @@ export default function Home() {
       <div className={styles.main}>{header}
         <div className={styles.scroll}>
           <div className={styles.tvhdr}>
-            <h2 className={styles.tvtitle}>{vThread.title}</h2>
+            <div className={styles.tvmeta}>
+              {vThread.turns.length}턴 · {new Date(vThread.createdAt).toLocaleDateString("ko")}
+            </div>
             <button className={styles.back} onClick={() => setVThread(null)}>← 새 질문</button>
           </div>
           {vThread.turns.map((turn, ti) => (
-            <div key={ti} className={styles.tblk}>
-              <div className={styles.tq}><span className={styles.tqn}>Q{ti + 1}</span>{turn.question}</div>
-              <div className={styles.tg}>
-                {Object.entries(turn.responses).map(([mid2, r]) => {
-                  const mo = MODELS.find(x => x.id === mid2);
-                  if (!mo || r.status !== "done") return null;
-                  return (
-                    <div key={mid2} className={styles.rc} style={{ border: `1px solid ${mo.color}25` }}>
-                      <div className={styles.rh}><div className={styles.rdot} style={{ background: mo.color }} /><span style={{ color: mo.color, fontFamily: "IBM Plex Mono", fontSize: 11 }}>{mo.name}</span></div>
-                      <div className={styles.rb}><MD c={r.content} /></div>
-                    </div>
-                  );
-                })}
-              </div>
-              {turn.synthesis && <SynthPanel s={turn.synthesis} onFU={fq => { tref.current = vThread; setAThread(vThread); setVThread(null); void run(fq); }} compact />}
-            </div>
+            <TurnBlock
+              key={ti}
+              turn={turn}
+              qIdx={ti}
+              showQBadge={vThread.turns.length > 1}
+              onFollowUp={fq => {
+                tref.current = vThread;
+                setAThread(vThread);
+                setVThread(null);
+                setSbOpen(true);
+                void run(fq);
+              }}
+            />
           ))}
         </div>
       </div>

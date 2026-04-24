@@ -1,5 +1,49 @@
+:root {
+  /* Background */
+  --bg:         #ffffff;
+  --bg-soft:    #f7f8fa;
+  --bg-sunken:  #eef0f3;
+
+  /* Text */
+  --fg:         #0a0a0a;
+  --fg-2:       #2d3748;
+  --fg-3:       #4a5568;
+  --fg-muted:   #718096;
+  --fg-faint:   #a0aec0;
+
+  /* Borders */
+  --br:         #e2e8f0;
+  --br-strong:  #cbd5e1;
+
+  /* Accents */
+  --accent:       #b45309;
+  --accent-soft:  #fef3c7;
+  --ok:           #059669;
+  --ok-soft:      #d1fae5;
+  --warn:         #c2410c;
+  --warn-soft:    #ffedd5;
+  --err:          #dc2626;
+  --err-soft:     #fee2e2;
+
+  /* Fonts */
+  --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+               "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'Syne', var(--font-sans);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #07090f; color: #d8e4f0; font-family: 'IBM Plex Sans', sans-serif; }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #07090f; }
-::-webkit-scrollbar-thumb { background: #1e2e44; border-radius: 3px; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-soft); }
+::-webkit-scrollbar-thumb { background: var(--br-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
