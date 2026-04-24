@@ -3,19 +3,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [pw, setPw]     = useState("");
+  const [value, setValue] = useState("");
   const [err, setErr]   = useState("");
   const [busy, setBusy] = useState(false);
   const router          = useRouter();
 
   const submit = async () => {
-    if (!pw.trim()) return;
+    if (!value.trim()) return;
     setBusy(true); setErr("");
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: pw }),
+        body: JSON.stringify({ value }),
       });
       const data = await res.json();
       if (!res.ok) { setErr(data.error || "오류가 발생했어요"); setBusy(false); return; }
@@ -40,14 +40,16 @@ export default function LoginPage() {
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg,#42c8a0,#4285f4,#f5c842)" }} />
         <div style={{ fontFamily: "'Syne',sans-serif", fontSize: 24, fontWeight: 800, color: "#f5c842", marginBottom: 4 }}>coThink</div>
         <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#2e4260", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 32 }}>MULTI-MODEL REASONING</div>
-        <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#3a5270", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>비밀번호</div>
+        <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#3a5270", letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>접속 코드</div>
         <input
-          type="password"
-          value={pw}
-          onChange={e => setPw(e.target.value)}
+          type="text"
+          value={value}
+          onChange={e => setValue(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter") submit(); }}
-          placeholder="••••••••"
+          placeholder="이메일로 받은 10자리 코드"
           autoFocus
+          autoComplete="off"
+          spellCheck={false}
           style={{
             width: "100%", background: "#07090f", border: "1px solid #1a2e44",
             borderRadius: 7, padding: "10px 14px", color: "#d8e4f0",
@@ -60,7 +62,7 @@ export default function LoginPage() {
         )}
         <button
           onClick={submit}
-          disabled={busy || !pw.trim()}
+          disabled={busy || !value.trim()}
           style={{
             width: "100%", padding: "10px", background: busy ? "#b89030" : "#f5c842",
             color: "#07090f", fontFamily: "'Syne',sans-serif", fontWeight: 800,
