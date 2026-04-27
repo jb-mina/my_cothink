@@ -177,6 +177,46 @@ function MD({ c }: { c: string }) {
   return <>{out}</>;
 }
 
+// ── Clamp / ScrollNav ─────────────────────────────────────────────────────────
+function Clamp({ children, lines = 10 }: { children: React.ReactNode; lines?: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    const measure = () => setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    measure();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, [children]);
+  return (
+    <div className={styles.clampWrap} style={{ ['--clamp-lines' as string]: lines }}>
+      <div ref={ref} className={expanded ? undefined : styles.clamp}>{children}</div>
+      {overflowing && (
+        <button type="button" className={styles.expandBtn} onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}>
+          {expanded ? "접기 ▴" : "더 보기 ▾"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ScrollNav({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement> }) {
+  const top = () => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  const bottom = () => {
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  };
+  return (
+    <div className={styles.scrollNav}>
+      <button type="button" className={styles.snBtn} onClick={top} aria-label="맨 위로">▲</button>
+      <button type="button" className={styles.snBtn} onClick={bottom} aria-label="맨 아래로">▼</button>
+    </div>
+  );
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function Tabs({ sel, resp, qk, activeIdx, setActiveIdx }: {
   sel: string[]; resp: Record<string, MR>; qk: number;
@@ -254,7 +294,7 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
         <div className={styles.tbox} style={{ marginBottom: 14 }}>⚠ 종합 답변이 토큰 한도로 잘렸을 수 있습니다.</div>
       )}
       <div className={styles.bl}>종합 답변</div>
-      <div className={styles.bb}><MD c={s.bestAnswer} /></div>
+      <div className={styles.bb}><Clamp lines={10}><MD c={s.bestAnswer} /></Clamp></div>
       <div className={styles.sg}>
         <div><div className={styles.sl}>공통된 관점</div><div className={styles.st}><MD c={s.agreement} /></div></div>
         <div><div className={styles.sl}>고유한 인사이트</div><div className={styles.st}><MD c={s.uniqueInsights} /></div></div>
@@ -312,17 +352,19 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
 }
 
 // ── Thread turn block (synthesis first + collapsible individual answers) ─────
-function TurnBlock({ turn, showQBadge, qIdx, onFollowUp, isLast, cq, setCQ, onContinue }: {
+function TurnBlock({ turn, showQBadge, qIdx, onFollowUp, isLast, cq, setCQ, onContinue, collapsedByDefault }: {
   turn: Turn; showQBadge: boolean; qIdx: number;
   onFollowUp: (q: string) => void;
   isLast?: boolean;
   cq?: string;
   setCQ?: (v: string) => void;
   onContinue?: () => void;
+  collapsedByDefault?: boolean;
 }) {
   const detRef = useRef<HTMLDetailsElement>(null);
   const responseIds = Object.keys(turn.responses).filter(id => MODELS.find(m => m.id === id));
   const [activeIdx, setActiveIdx] = useState(0);
+  const [expanded, setExpanded] = useState(!collapsedByDefault);
 
   const handleAttrClick = (name: string) => {
     const m = MODELS.find(x => x.name === name || x.short === name);
@@ -340,12 +382,27 @@ function TurnBlock({ turn, showQBadge, qIdx, onFollowUp, isLast, cq, setCQ, onCo
     responseIds.map(id => [id, { status: "done" as const, content: turn.responses[id].content, truncated: turn.responses[id].truncated }])
   );
 
+  if (!expanded) {
+    const preview = turn.question.length > 90 ? turn.question.slice(0, 90) + "…" : turn.question;
+    return (
+      <button type="button" className={styles.tblkCol} onClick={() => setExpanded(true)}>
+        <span className={styles.tblkColIcon}>▸</span>
+        {showQBadge && <span className={styles.tqn}>Q{qIdx + 1}</span>}
+        <span className={styles.tblkColQ}>{preview}</span>
+        <span className={styles.tblkColHint}>펼치기</span>
+      </button>
+    );
+  }
+
   return (
     <div className={styles.tblk}>
       <CopyBtn text={formatTurnAsMarkdown(turn)} label="턴 전체 복사" />
+      {collapsedByDefault && (
+        <button type="button" className={styles.collapseBtn} onClick={() => setExpanded(false)}>▴ 접기</button>
+      )}
       <div className={styles.tq}>
         {showQBadge && <span className={styles.tqn}>Q{qIdx + 1}</span>}
-        <span>{turn.question}</span>
+        <div className={styles.tqText}><Clamp lines={10}>{turn.question}</Clamp></div>
       </div>
       {turn.synthesis && (
         <SynthPanel
@@ -388,6 +445,7 @@ export default function Home() {
   const [searchQ, setSearchQ] = useState("");
   const openThread = (t: Thread) => { tref.current = t; setVThread(t); setSbOpen(false); };
   const sref = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const tref = useRef<Thread | null>(null);
 
   useEffect(() => { setThreads(loadAll()); }, []);
@@ -507,51 +565,61 @@ export default function Home() {
     <div className={styles.app} data-sb={sbOpen ? "1" : "0"}>
       {sidebar}
       <div className={styles.main}>{header}
-        <div className={styles.scroll}>
+        <div className={styles.scroll} ref={scrollRef}>
           <div className={styles.tvhdr}>
             <div className={styles.tvmeta}>
               {vThread.turns.length}턴 · {new Date(vThread.createdAt).toLocaleDateString("ko")}
             </div>
           </div>
-          {vThread.turns.map((turn, ti) => (
-            <TurnBlock
-              key={ti}
-              turn={turn}
-              qIdx={ti}
-              showQBadge={vThread.turns.length > 1}
-              isLast={ti === vThread.turns.length - 1}
-              cq={cq}
-              setCQ={setCQ}
-              onContinue={() => {
-                if (!cq.trim() || !vThread) return;
-                tref.current = vThread;
-                setAThread(vThread);
-                setVThread(null);
-                setSbOpen(true);
-                const text = cq;
-                setCQ("");
-                void run(text);
-              }}
-              onFollowUp={fq => {
-                tref.current = vThread;
-                setAThread(vThread);
-                setVThread(null);
-                setSbOpen(true);
-                void run(fq);
-              }}
-            />
-          ))}
+          {vThread.turns.map((turn, ti) => {
+            const last = ti === vThread.turns.length - 1;
+            return (
+              <TurnBlock
+                key={ti}
+                turn={turn}
+                qIdx={ti}
+                showQBadge={vThread.turns.length > 1}
+                isLast={last}
+                collapsedByDefault={!last}
+                cq={cq}
+                setCQ={setCQ}
+                onContinue={() => {
+                  if (!cq.trim() || !vThread) return;
+                  tref.current = vThread;
+                  setAThread(vThread);
+                  setVThread(null);
+                  setSbOpen(true);
+                  const text = cq;
+                  setCQ("");
+                  void run(text);
+                }}
+                onFollowUp={fq => {
+                  tref.current = vThread;
+                  setAThread(vThread);
+                  setVThread(null);
+                  setSbOpen(true);
+                  void run(fq);
+                }}
+              />
+            );
+          })}
         </div>
       </div>
+      <ScrollNav scrollRef={scrollRef} />
     </div>
   );
 
   // Active session
+  const isCurrentDisplayed = phase === "done" && !!synth;
+  const priorTurnsToShow = aThread
+    ? (isCurrentDisplayed ? aThread.turns.slice(0, -1) : aThread.turns)
+    : [];
+
   return (
     <div className={styles.app} data-sb={sbOpen ? "1" : "0"}>
       {sidebar}
       <div className={styles.main}>{header}
-        <div className={styles.scroll}>
+        <div className={styles.scroll} ref={scrollRef}>
           <div className={styles.ses}>
             <div className={styles.panel}>
               <div className={styles.plabel}>Models — {sel.length} / {MODELS.length}</div>
@@ -571,6 +639,21 @@ export default function Home() {
                 ); })}
               </div>
             </div>
+            {priorTurnsToShow.length > 0 && (
+              <div className={styles.priorList}>
+                <div className={styles.priorLabel}>이전 질문 {priorTurnsToShow.length}개 — 클릭해 펼쳐 보기</div>
+                {priorTurnsToShow.map((turn, ti) => (
+                  <TurnBlock
+                    key={`prior-${ti}`}
+                    turn={turn}
+                    qIdx={ti}
+                    showQBadge
+                    collapsedByDefault
+                    onFollowUp={fq => void run(fq)}
+                  />
+                ))}
+              </div>
+            )}
             {aThread && (
               <div className={styles.tctx}>
                 <span>쓰레드 {aThread.turns.length}번째 질문 — <em>{aThread.title.slice(0, 40)}{aThread.title.length > 40 ? "..." : ""}</em></span>
@@ -602,6 +685,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <ScrollNav scrollRef={scrollRef} />
     </div>
   );
 }
