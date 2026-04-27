@@ -115,7 +115,7 @@ export default function LandingPage() {
                 <button className={styles.btnPrimary} onClick={() => openModal(heroForm.email)}>초대장 받기 →</button>
                 <span className={styles.heroNote}>2분이면 요청 완료</span>
               </div>
-              <div className={styles.heroSub}>초대 코드 발급 후 이용 가능 · 스레드는 브라우저에만 저장됩니다</div>
+              <div className={styles.heroSub}>초대 코드 발급 후 이용 가능</div>
             </div>
 
             <div className={styles.mockWrap}>
@@ -284,13 +284,8 @@ export default function LandingPage() {
               { n: "06", en: "FOLLOW-UPS",      ko: "후속 질문",    desc: "사고를 다음 단계로 끌어가는 3개의 제안 질문.",             ex: "1) 가격 민감도 검증법은? 2) 경쟁 제품의 약점은? 3) GTM 채널은?",  c: "#4285f4" },
             ].map((card) => (
               <div key={card.n} className={styles.outCard2}>
-                <div className={styles.outCard2Head}>
-                  <span className={styles.outCard2Bullet} style={{ background: card.c }} />
-                  <span className={styles.outCard2Num}>{card.n}</span>
-                  <span className={styles.outCard2Sep}>·</span>
-                  <span className={styles.outCard2En} style={{ color: card.c }}>{card.en}</span>
-                  <span className={styles.outCard2Ko}>{card.ko}</span>
-                </div>
+                <div className={styles.outCard2Label} style={{ color: card.c }}>{card.n} · {card.en}</div>
+                <div className={styles.outCard2Title}>{card.ko}</div>
                 <div className={styles.outCard2Desc}>{card.desc}</div>
                 <div className={styles.outCard2Ex} style={{ borderLeftColor: card.c }}>{card.ex}</div>
               </div>
@@ -311,8 +306,7 @@ export default function LandingPage() {
               </h2>
             </div>
             <p className={styles.lead}>
-              coThink는 결정을 빠르게 만드는 도구가 아니라, 결정을 잘 내리기 위한 사고 환경입니다. 혼자
-              중요한 판단을 책임져야 할 때 펼쳐 보세요.
+              coThink는 결정을 더 제대로 내리기 위한 사고 환경입니다. 혼자 중요한 판단을 빠르게 책임져야 할 때 활용하세요.
             </p>
           </div>
           <div className={styles.useGrid}>
@@ -358,21 +352,70 @@ export default function LandingPage() {
               <span className={styles.hl}>모델을 교차 검증합니다.</span>
             </h2>
             <p className={styles.lead} style={{ marginTop: 20 }}>
-              단지 Tab을 오가며 불편하게 하고 있었을 뿐입니다. coThink는 그 흐름을 한 화면 안으로 가져옵니다.
+              단지 멀티 Tab을 오가며 불편하게 이용하고 있죠. coThink는 그 흐름을 한 화면 안으로 가져옵니다.
             </p>
           </div>
 
-          <div className={styles.testimonial}>
-            <div className={styles.testimonialAvatar}>J</div>
-            <div className={styles.testimonialBody}>
-              <div className={styles.testimonialQuote}>
-                “기획서 쓸 때 Gemini 답변만 믿고 썼다가 회의에서 깨진 적이 있죠. coThink로 빠르게 교차 검증하니
-                다른 모델은 놓친 <strong>‘비용 리스크’</strong>를 중재자 모델이 알려주더군요.”
+          <div className={styles.diagram}>
+            <div className={styles.diagramSide}>
+              <div className={styles.diagramSideLabel}>현재 — 멀티 Tab</div>
+              <div className={styles.diagramTabs}>
+                {[
+                  { name: "ChatGPT",    color: "#10a37f" },
+                  { name: "Claude",     color: "#d97757" },
+                  { name: "Gemini",     color: "#4285f4" },
+                  { name: "Perplexity", color: "#20808d" },
+                ].map((t) => (
+                  <div key={t.name} className={styles.diagramTab}>
+                    <div className={styles.diagramTabBar}>
+                      <span /><span /><span />
+                      <span className={styles.diagramTabName} style={{ color: t.color }}>{t.name}</span>
+                    </div>
+                    <div className={styles.diagramTabQ}>Q. 같은 질문 복붙…</div>
+                  </div>
+                ))}
               </div>
-              <div className={styles.testimonialMeta}>
-                <span className={styles.testimonialName}>J</span>
-                <span className={styles.testimonialDot}>·</span>
-                <span className={styles.testimonialRole}>스타트업 PM</span>
+              <div className={styles.diagramFoot}>
+                <span className={styles.diagramFootStep}>4번 탭 열기</span>
+                <span className={styles.diagramFootSep}>·</span>
+                <span className={styles.diagramFootStep}>4번 복붙</span>
+                <span className={styles.diagramFootSep}>·</span>
+                <span className={styles.diagramFootStep}>4번 따로 읽기</span>
+              </div>
+            </div>
+
+            <div className={styles.diagramArrow} aria-hidden="true">
+              <span className={styles.diagramArrowLine} />
+              <span className={styles.diagramArrowHead}>→</span>
+            </div>
+
+            <div className={`${styles.diagramSide} ${styles.diagramSideOn}`}>
+              <div className={styles.diagramSideLabel}>coThink — 한 화면</div>
+              <div className={styles.diagramOne}>
+                <div className={styles.diagramOneHead}>
+                  <span /><span /><span />
+                  <span className={styles.diagramOneTitle}>cothink</span>
+                </div>
+                <div className={styles.diagramOneQ}>Q. 같은 질문 한 번만</div>
+                <div className={styles.diagramOneModels}>
+                  {[
+                    { n: "GPT-4o",     c: "#10a37f" },
+                    { n: "Claude",     c: "#d97757" },
+                    { n: "Gemini",     c: "#4285f4" },
+                    { n: "Perplexity", c: "#20808d" },
+                    { n: "Grok",       c: "#e8562a" },
+                  ].map((m) => (
+                    <span key={m.n} className={styles.diagramOneChip} style={{ color: m.c, background: `${m.c}14`, borderColor: `${m.c}40` }}>
+                      <span style={{ background: m.c }} />{m.n}
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.diagramOneSynth}>+ 중재자 종합 · 일치점 / 모순점 / 결론</div>
+              </div>
+              <div className={styles.diagramFoot}>
+                <span className={styles.diagramFootStepOn}>1번 묻기</span>
+                <span className={styles.diagramFootSep}>·</span>
+                <span className={styles.diagramFootStepOn}>구조화된 종합</span>
               </div>
             </div>
           </div>

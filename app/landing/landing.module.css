@@ -135,7 +135,7 @@
 
 .heroAnswers { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 4px; }
 .heroAnswer {
-  display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: start;
+  display: grid; grid-template-columns: 175px 1fr; gap: 16px; align-items: start;
   opacity: 0;
   animation: heroAnsIn 0.65s ease-out forwards;
 }
@@ -148,7 +148,7 @@
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 10px; border-radius: 8px;
   border: 1px solid;
-  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  font-family: var(--font-mono); font-size: 11.5px; font-weight: 600;
   white-space: nowrap; line-height: 1.2;
   width: fit-content; max-width: 100%;
 }
@@ -262,54 +262,177 @@
   font-size: 13px; color: var(--ink-2);
 }
 
-.outGrid2 { display: grid; grid-template-columns: 1fr; gap: 0; max-width: 820px; margin: 0 auto; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--cream); }
-.outCard2 {
-  padding: 22px 26px;
-  border-bottom: 1px solid var(--line-2);
+.outGrid2 {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  max-width: 1100px; margin: 0 auto;
 }
-.outCard2:last-child { border-bottom: none; }
-.outCard2Head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-.outCard2Bullet { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.outCard2Num { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--mute); letter-spacing: 0.05em; }
-.outCard2Sep { color: var(--mute-2); font-family: var(--font-mono); }
-.outCard2En { font-family: var(--font-mono); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; }
-.outCard2Ko { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--mute-2); letter-spacing: 0.1em; }
-.outCard2Desc { font-size: 16px; font-weight: 500; color: var(--ink); line-height: 1.5; margin-bottom: 14px; }
+@media (max-width: 960px) { .outGrid2 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .outGrid2 { grid-template-columns: 1fr; } }
+.outCard2 {
+  padding: 24px 24px 22px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.outCard2:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(217, 102, 40, 0.18);
+}
+.outCard2Label {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.outCard2Title {
+  font-size: 19px; font-weight: 700; color: var(--ink);
+  letter-spacing: -0.01em; margin-bottom: 10px;
+}
+.outCard2Desc {
+  font-size: 14px; line-height: 1.6; color: var(--mute);
+  margin-bottom: 16px;
+}
 .outCard2Ex {
-  padding: 8px 14px;
+  margin-top: auto;
+  padding: 8px 12px;
   border-left: 2px solid var(--line);
-  font-family: var(--font-mono); font-size: 12.5px;
+  font-family: var(--font-mono); font-size: 12px;
   color: var(--mute); line-height: 1.55;
 }
 
 /* ── Social Proof ────────────────────────────────────────────────────────── */
-.spHead { max-width: 720px; margin: 0 auto 48px; text-align: center; }
+.spHead { max-width: 720px; margin: 0 auto 56px; text-align: center; }
 .spHead .lead { margin-left: auto; margin-right: auto; }
-.testimonial {
-  max-width: 720px; margin: 0 auto;
+
+.diagram {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 56px 1fr; gap: 12px; align-items: stretch;
+}
+@media (max-width: 880px) {
+  .diagram { grid-template-columns: 1fr; gap: 24px; }
+}
+
+.diagramSide {
   background: var(--cream);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 32px 36px;
-  display: grid; grid-template-columns: 56px 1fr; gap: 20px; align-items: start;
+  padding: 22px 22px 18px;
+  display: flex; flex-direction: column; gap: 14px;
 }
-@media (max-width: 540px) {
-  .testimonial { grid-template-columns: 48px 1fr; padding: 24px 22px; gap: 14px; }
+.diagramSideOn {
+  background: var(--accent-soft);
+  border: 1.5px solid var(--accent);
 }
-.testimonialAvatar {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--accent); color: #fff;
+.diagramSideLabel {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mute);
+}
+.diagramSideOn .diagramSideLabel { color: var(--accent); }
+
+.diagramTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 540px) { .diagramTabs { grid-template-columns: 1fr; } }
+.diagramTab {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.diagramTabBar { display: flex; align-items: center; gap: 4px; }
+.diagramTabBar > span:nth-child(1),
+.diagramTabBar > span:nth-child(2),
+.diagramTabBar > span:nth-child(3) {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--line);
+}
+.diagramTabName {
+  margin-left: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.diagramTabQ {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--mute-2); line-height: 1.4;
+}
+
+.diagramOne {
+  background: #fff;
+  border: 1px solid var(--accent);
+  border-radius: 9px;
+  padding: 14px 14px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.diagramOneHead { display: flex; align-items: center; gap: 4px; }
+.diagramOneHead > span:nth-child(1) { background: #f56b5b; }
+.diagramOneHead > span:nth-child(2) { background: #f4be4f; }
+.diagramOneHead > span:nth-child(3) { background: #61c554; }
+.diagramOneHead > span:nth-child(1),
+.diagramOneHead > span:nth-child(2),
+.diagramOneHead > span:nth-child(3) {
+  width: 7px; height: 7px; border-radius: 50%;
+}
+.diagramOneTitle {
+  margin-left: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--mute);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.diagramOneQ {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+  color: var(--ink); line-height: 1.4;
+}
+.diagramOneModels { display: flex; flex-wrap: wrap; gap: 6px; }
+.diagramOneChip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: 6px; border: 1px solid;
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+}
+.diagramOneChip > span {
+  width: 5px; height: 5px; border-radius: 50%;
+}
+.diagramOneSynth {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 6px 6px 0;
+  font-family: var(--font-mono); font-size: 11px; color: var(--accent-2);
+  font-weight: 600; letter-spacing: 0.02em; line-height: 1.5;
+}
+
+.diagramFoot {
+  margin-top: auto;
+  padding-top: 6px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--mute);
+}
+.diagramFootStep { color: var(--mute); }
+.diagramFootStepOn { color: var(--accent-2); font-weight: 600; }
+.diagramFootSep { color: var(--mute-2); }
+
+.diagramArrow {
   display: grid; place-items: center;
-  font-family: var(--font-display); font-weight: 800; font-size: 22px;
+  position: relative;
+  color: var(--accent);
 }
-@media (max-width: 540px) { .testimonialAvatar { width: 48px; height: 48px; font-size: 18px; } }
-.testimonialBody { display: flex; flex-direction: column; gap: 12px; }
-.testimonialQuote { font-size: 16.5px; line-height: 1.7; color: var(--ink-2); }
-.testimonialQuote strong { color: var(--accent-2); font-weight: 700; }
-.testimonialMeta { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--mute); }
-.testimonialName { font-weight: 700; color: var(--ink); }
-.testimonialDot { color: var(--mute-2); }
-.testimonialRole { color: var(--mute); }
+.diagramArrowLine {
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: var(--accent); opacity: 0.35;
+}
+.diagramArrowHead {
+  position: relative;
+  padding: 4px 10px;
+  background: #fff;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-weight: 700; font-size: 16px;
+  color: var(--accent);
+}
+@media (max-width: 880px) {
+  .diagramArrow { transform: rotate(90deg); height: 32px; }
+}
 
 /* ── Use cases (4 cards) ─────────────────────────────────────────────────── */
 .useGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
