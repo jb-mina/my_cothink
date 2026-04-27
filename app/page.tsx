@@ -4,12 +4,13 @@ import styles from "./page.module.css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type RS = "loading" | "done" | "error";
-type MR = { status: RS; content: string };
+type MR = { status: RS; content: string; truncated?: boolean };
 type Syn = {
   agreement: string; uniqueInsights: string; contradictions: string;
   bestAnswer: string; attributions: Record<string, string>; followUps: string[];
+  _truncated?: boolean;
 };
-type Turn = { question: string; responses: Record<string, { status: string; content: string }>; synthesis: Syn | null };
+type Turn = { question: string; responses: Record<string, { status: string; content: string; truncated?: boolean }>; synthesis: Syn | null };
 type Thread = { id: string; title: string; createdAt: number; turns: Turn[] };
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -43,6 +44,69 @@ const removeOne = (id: string) => {
   try { localStorage.setItem(SK, JSON.stringify(all)); } catch {}
   return all;
 };
+
+// ── Copy ──────────────────────────────────────────────────────────────────────
+function CopyBtn({ text, label = "복사" }: { text: string; label?: string }) {
+  const [done, setDone] = useState(false);
+  const onClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+    }
+    setDone(true);
+    setTimeout(() => setDone(false), 1800);
+  };
+  return (
+    <button className={styles.cpy} onClick={onClick} type="button" aria-label="복사">
+      {done ? "✓ 복사됨" : `⧉ ${label}`}
+    </button>
+  );
+}
+
+function formatSynthAsMarkdown(s: Syn): string {
+  const parts: string[] = [];
+  if (s.bestAnswer) parts.push(`## 종합 답변\n\n${s.bestAnswer}`);
+  if (s.agreement) parts.push(`### 공통된 관점\n\n${s.agreement}`);
+  if (s.uniqueInsights) parts.push(`### 고유한 인사이트\n\n${s.uniqueInsights}`);
+  if (s.contradictions && s.contradictions !== "없음") {
+    parts.push(`### 모순 및 이견\n\n${s.contradictions}`);
+  }
+  const attrs = Object.entries(s.attributions || {});
+  if (attrs.length > 0) {
+    const lines = attrs.map(([n, note]) => `- **${n}**: ${note}`).join("\n");
+    parts.push(`### 모델별 기여\n\n${lines}`);
+  }
+  if (s.followUps && s.followUps.length > 0) {
+    const lines = s.followUps.map(q => `- ${q}`).join("\n");
+    parts.push(`### 제안 후속 질문\n\n${lines}`);
+  }
+  return parts.join("\n\n");
+}
+
+function formatTurnAsMarkdown(turn: Turn): string {
+  const parts: string[] = [`# ${turn.question}`];
+  for (const id of Object.keys(turn.responses)) {
+    const m = MODELS.find(x => x.id === id);
+    if (!m) continue;
+    const r = turn.responses[id];
+    if (r.status !== "done" || !r.content) continue;
+    parts.push(`## ${m.name}\n\n${r.content}`);
+  }
+  if (turn.synthesis) {
+    parts.push(`---\n\n${formatSynthAsMarkdown(turn.synthesis)}`);
+  }
+  return parts.join("\n\n");
+}
 
 // ── Markdown ──────────────────────────────────────────────────────────────────
 function fmt(text: string): React.ReactNode[] {
@@ -154,6 +218,9 @@ function Tabs({ sel, resp, qk, activeIdx, setActiveIdx }: {
         })}
       </div>
       <div className={styles.tabbody}>
+        {r?.status === "done" && r.content && (
+          <CopyBtn text={r.content} label="답변 복사" />
+        )}
         {!r || r.status === "loading" ? (
           <div className={styles.ldots}>
             {[0, 1, 2].map(k => <div key={k} className={styles.ldot} style={{ background: `${mo?.color || "#42c8a0"}80`, animationDelay: `${k * .18}s` }} />)}
@@ -161,7 +228,12 @@ function Tabs({ sel, resp, qk, activeIdx, setActiveIdx }: {
         ) : r.status === "error" ? (
           <p className={styles.rerr}>{r.content}</p>
         ) : (
-          <MD c={r.content} />
+          <>
+            <MD c={r.content} />
+            {r.truncated && (
+              <div className={styles.tbox}>⚠ 답변이 토큰 한도로 잘렸을 수 있습니다. 후속 질문으로 이어 받아보세요.</div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -176,7 +248,11 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
 }) {
   return (
     <div className={compact ? styles.sc2 : styles.sc}>
+      <CopyBtn text={formatSynthAsMarkdown(s)} label="종합 복사" />
       <div className={styles.stag}>✦ Mediator Synthesis</div>
+      {s._truncated && (
+        <div className={styles.tbox} style={{ marginBottom: 14 }}>⚠ 종합 답변이 토큰 한도로 잘렸을 수 있습니다.</div>
+      )}
       <div className={styles.bl}>종합 답변</div>
       <div className={styles.bb}><MD c={s.bestAnswer} /></div>
       <div className={styles.sg}>
@@ -257,11 +333,12 @@ function TurnBlock({ turn, showQBadge, qIdx, onFollowUp }: {
   };
 
   const respMap: Record<string, MR> = Object.fromEntries(
-    responseIds.map(id => [id, { status: "done" as const, content: turn.responses[id].content }])
+    responseIds.map(id => [id, { status: "done" as const, content: turn.responses[id].content, truncated: turn.responses[id].truncated }])
   );
 
   return (
     <div className={styles.tblk}>
+      <CopyBtn text={formatTurnAsMarkdown(turn)} label="턴 전체 복사" />
       <div className={styles.tq}>
         {showQBadge && <span className={styles.tqn}>Q{qIdx + 1}</span>}
         <span>{turn.question}</span>
@@ -325,7 +402,7 @@ export default function Home() {
 
     const priorTurns = (tref.current?.turns ?? []).slice(-HISTORY_LIMIT);
 
-    const results: { id: string; name: string; content: string }[] = [];
+    const results: { id: string; name: string; content: string; truncated: boolean }[] = [];
     await Promise.allSettled(sel.map(async id => {
       const mo = MODELS.find(m => m.id === id); if (!mo) return;
       const history = priorTurns
@@ -338,8 +415,9 @@ export default function Home() {
         const res = await fetch("/api/query", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modelId: id, question: tq, history }) });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-        setResp(p => ({ ...p, [id]: { status: "done", content: data.content || "" } }));
-        results.push({ id, name: mo.name, content: data.content || "" });
+        const truncated = !!data.truncated;
+        setResp(p => ({ ...p, [id]: { status: "done", content: data.content || "", truncated } }));
+        results.push({ id, name: mo.name, content: data.content || "", truncated });
       } catch (e: unknown) {
         setResp(p => ({ ...p, [id]: { status: "error", content: e instanceof Error ? e.message : "error" } }));
       }
@@ -354,7 +432,7 @@ export default function Home() {
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setSynth(data);
-      const turn: Turn = { question: tq, responses: Object.fromEntries(results.map(r => [r.id, { status: "done", content: r.content }])), synthesis: data };
+      const turn: Turn = { question: tq, responses: Object.fromEntries(results.map(r => [r.id, { status: "done", content: r.content, truncated: r.truncated }])), synthesis: data };
       const prev = tref.current;
       const thread: Thread = prev ? { ...prev, turns: [...prev.turns, turn] } : { id: String(Date.now()), title: tq.slice(0, 70), createdAt: Date.now(), turns: [turn] };
       tref.current = thread; setAThread(thread); saveOne(thread); setThreads(loadAll());

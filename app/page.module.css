@@ -74,7 +74,7 @@
 .tab:hover { color: var(--fg-2); background: var(--bg-sunken); }
 .tabOn { color: var(--fg) !important; background: var(--bg) !important; }
 .tdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.tabbody { padding: 24px 28px; min-height: 100px; }
+.tabbody { padding: 24px 28px; min-height: 100px; position: relative; }
 .ldots { display: flex; gap: 6px; padding: 18px 0; }
 .ldot { width: 7px; height: 7px; border-radius: 50%; animation: ld 1.2s infinite; }
 @keyframes ld { 0%,100% { opacity:.2; transform:scale(.7); } 50% { opacity:1; transform:scale(1); } }
@@ -118,7 +118,7 @@
 .tvmeta { font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); letter-spacing: .5px; }
 .back { padding: 8px 16px; background: transparent; border: 1px solid var(--br-strong); border-radius: 8px; color: var(--ok); font-size: 13px; cursor: pointer; font-family: var(--font-mono); white-space: nowrap; transition: all .15s; flex-shrink: 0; font-weight: 500; }
 .back:hover { border-color: var(--ok); background: var(--ok-soft); }
-.tblk { max-width: 1080px; margin: 0 auto; padding: 20px 28px 32px; border-bottom: 1px solid var(--br); }
+.tblk { max-width: 1080px; margin: 0 auto; padding: 20px 28px 32px; border-bottom: 1px solid var(--br); position: relative; }
 .tq { display: flex; align-items: flex-start; gap: 12px; font-size: 17px; color: var(--fg); margin-bottom: 20px; line-height: 1.5; font-weight: 500; }
 .tqn { font-family: var(--font-mono); font-size: 11px; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent); padding: 3px 10px; border-radius: 12px; flex-shrink: 0; margin-top: 3px; font-weight: 600; }
 
@@ -156,6 +156,13 @@
 .tbl th { padding: 8px 12px; border-bottom: 1px solid var(--br-strong); color: var(--accent); text-align: left; font-family: var(--font-mono); font-size: 11px; letter-spacing: .5px; text-transform: uppercase; background: var(--bg-soft); font-weight: 600; }
 .tbl td { padding: 8px 12px; border-bottom: 1px solid var(--br); color: var(--fg-2); font-size: 14px; }
 .tbl tr:last-child td { border-bottom: none; }
+
+/* ── Copy button ─────────────────────────────────────────────────────────── */
+.cpy { position: absolute; top: 12px; right: 14px; z-index: 2; background: var(--bg); border: 1px solid var(--br); border-radius: 6px; color: var(--fg-muted); font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 5px 10px; cursor: pointer; transition: all .15s; letter-spacing: .3px; white-space: nowrap; }
+.cpy:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── Truncation warning ──────────────────────────────────────────────────── */
+.tbox { margin-top: 14px; padding: 8px 12px; background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 6px; color: var(--warn); font-family: var(--font-mono); font-size: 12px; line-height: 1.5; }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {

@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: modelId,
         messages,
-        max_tokens: 800,
+        max_tokens: 4000,
       }),
     });
 
@@ -40,7 +40,8 @@ export async function POST(req: NextRequest) {
     }
 
     const content = data.choices?.[0]?.message?.content || "(빈 응답)";
-    return NextResponse.json({ content });
+    const truncated = data.choices?.[0]?.finish_reason === "length";
+    return NextResponse.json({ content, truncated });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: msg }, { status: 500 });
