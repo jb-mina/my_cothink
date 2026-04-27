@@ -42,6 +42,9 @@ Available model names: ${modelNames}. Only include in attributions if meaningful
     let truncated = false;
 
     if (mediatorId === "anthropic") {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return NextResponse.json({ error: "ANTHROPIC_API_KEY missing" }, { status: 500 });
+      }
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
         max_tokens: 3000,
