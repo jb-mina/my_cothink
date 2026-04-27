@@ -295,7 +295,7 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
             <span className={styles.fa}>→</span><span>{q}</span>
           </button>
         ))}
-        {!compact && setCQ && (
+        {setCQ && onCS && (
           <>
             <div className={styles.fl} style={{ marginTop: 14 }}>직접 입력</div>
             <div className={styles.crow}>
@@ -312,9 +312,13 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
 }
 
 // ── Thread turn block (synthesis first + collapsible individual answers) ─────
-function TurnBlock({ turn, showQBadge, qIdx, onFollowUp }: {
+function TurnBlock({ turn, showQBadge, qIdx, onFollowUp, isLast, cq, setCQ, onContinue }: {
   turn: Turn; showQBadge: boolean; qIdx: number;
   onFollowUp: (q: string) => void;
+  isLast?: boolean;
+  cq?: string;
+  setCQ?: (v: string) => void;
+  onContinue?: () => void;
 }) {
   const detRef = useRef<HTMLDetailsElement>(null);
   const responseIds = Object.keys(turn.responses).filter(id => MODELS.find(m => m.id === id));
@@ -349,6 +353,9 @@ function TurnBlock({ turn, showQBadge, qIdx, onFollowUp }: {
           onFU={onFollowUp}
           compact
           onAttrClick={handleAttrClick}
+          cq={isLast ? cq : undefined}
+          setCQ={isLast ? setCQ : undefined}
+          onCS={isLast ? onContinue : undefined}
         />
       )}
       {responseIds.length > 0 && (
@@ -505,7 +512,6 @@ export default function Home() {
             <div className={styles.tvmeta}>
               {vThread.turns.length}턴 · {new Date(vThread.createdAt).toLocaleDateString("ko")}
             </div>
-            <button className={styles.back} onClick={() => setVThread(null)}>← 새 질문</button>
           </div>
           {vThread.turns.map((turn, ti) => (
             <TurnBlock
@@ -513,6 +519,19 @@ export default function Home() {
               turn={turn}
               qIdx={ti}
               showQBadge={vThread.turns.length > 1}
+              isLast={ti === vThread.turns.length - 1}
+              cq={cq}
+              setCQ={setCQ}
+              onContinue={() => {
+                if (!cq.trim() || !vThread) return;
+                tref.current = vThread;
+                setAThread(vThread);
+                setVThread(null);
+                setSbOpen(true);
+                const text = cq;
+                setCQ("");
+                void run(text);
+              }}
               onFollowUp={fq => {
                 tref.current = vThread;
                 setAThread(vThread);
