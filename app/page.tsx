@@ -386,7 +386,7 @@ export default function Home() {
   const [vThread, setVThread] = useState<Thread | null>(null);
   const [sbOpen, setSbOpen] = useState(true);
   const [searchQ, setSearchQ] = useState("");
-  const openThread = (t: Thread) => { setVThread(t); setSbOpen(false); };
+  const openThread = (t: Thread) => { tref.current = t; setVThread(t); setSbOpen(false); };
   const sref = useRef<HTMLDivElement>(null);
   const tref = useRef<Thread | null>(null);
 
