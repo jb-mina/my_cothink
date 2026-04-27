@@ -115,194 +115,187 @@ export default function LandingPage() {
                 <button className={styles.btnPrimary} onClick={() => openModal(heroForm.email)}>초대장 받기 →</button>
                 <span className={styles.heroNote}>2분이면 요청 완료</span>
               </div>
-              <div className={styles.heroSub}>초대 코드 발급 후 이용 가능 · 스레드는 브라우저에만 저장됩니다</div>
+              <div className={styles.heroSub}>초대 코드 발급 후 이용 가능</div>
             </div>
 
             <div className={styles.mockWrap}>
-              <div className={styles.mockup}>
-                <div className={styles.mockHeader}>
-                  <span className={styles.mockDot} />
-                  <span className={styles.mockDot} />
-                  <span className={styles.mockDot} />
-                  <span className={styles.mockTitle}>cothink / thread</span>
+              <div className={styles.heroPanel}>
+                <div className={styles.heroPanelHead}>
+                  <span className={styles.heroPanelDots}>
+                    <span /><span /><span />
+                  </span>
+                  <span className={styles.heroPanelTitle}>MULTI-MODEL REASONING</span>
+                  <span className={styles.heroPanelMed}>mediator: Claude</span>
                 </div>
-                <div className={styles.mockQ}>이 AI 모델이 동시에 답하는 이 질문 (3가지 모델)</div>
-                <div className={styles.mockLabel}>
-                  <span>MODELS · 5</span>
-                  <span>1.8s</span>
+                <div className={styles.heroQ}>
+                  <span className={styles.heroQLabel}>▸ 질문</span>
+                  <p>여러 AI에게 동시에 묻는 것이 왜 더 나은가?</p>
                 </div>
-                <div className={styles.mockModels}>
-                  {["GPT-4o", "Gemini 2.5 Pro", "Claude Sonnet 4", "Perplexity Sonar Pro", "Grok 4.1 Fast"].map((m, i) => (
-                    <div key={m} className={styles.mockModel}>
-                      <span>{m}</span>
-                      <span className={styles.mockModelRight}>
-                        {i < 3 ? (
-                          <>
-                            <span>done</span>
-                            <span style={{ color: "#8dc573" }}>✓</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>thinking</span>
-                            <span className={styles.mockBar}><span /><span /><span /></span>
-                          </>
-                        )}
-                      </span>
+                <div className={styles.heroAnswers}>
+                  {[
+                    { name: "GPT-4o",               color: "#10a37f", text: "비교 분석은 의사결정 품질을 30% 이상 향상시킨다는 연구가…" },
+                    { name: "Gemini 3 Flash",       color: "#4285f4", text: "다중 관점 추론은 단일 모델 편향을 줄이는 가장 효과적인…" },
+                    { name: "Claude Sonnet 4",      color: "#d97757", text: "여러 모델의 응답을 구조화하여 종합하면 더 신뢰성 있는…" },
+                    { name: "Perplexity Sonar Pro", color: "#20808d", text: "최근 메타 분석에 따르면, 앙상블 추론은 정확도를…" },
+                    { name: "Grok 4.1 Fast",        color: "#e8562a", text: "1) 편향 감소 2) 누락 보완 3) 모순 발견 — 핵심 이점." },
+                  ].map((m, i) => (
+                    <div key={m.name} className={styles.heroAnswer} style={{ animationDelay: `${i * 0.18}s` }}>
+                      <div className={styles.heroAnswerBadge} style={{ color: m.color, background: `${m.color}14`, borderColor: `${m.color}40` }}>
+                        <span className={styles.heroAnswerDot} style={{ background: m.color }} />
+                        {m.name}
+                      </div>
+                      <div className={styles.heroAnswerText}>{m.text}</div>
                     </div>
                   ))}
                 </div>
-                <div className={styles.mockSynth}>▸ 중재자 종합: Claude Sonnet 4</div>
+                <div className={styles.heroSynth}>
+                  <div className={styles.heroSynthLabel}>+ MEDIATOR SYNTHESIS</div>
+                  <div className={styles.heroSynthBody}>
+                    5개 모델 모두 <strong>편향 감소</strong>를 핵심 이점으로 꼽았으며, Grok과 Perplexity는 정량 데이터를, Claude는 구조화 방법론을 강조했습니다.
+                  </div>
+                </div>
               </div>
-              <div className={styles.mockBadge}>Made in Seoul</div>
             </div>
+          </div>
+
+          <div className={styles.personas}>
+            {[
+              { tag: "리서처·애널리스트",   line: "관점의 다양성을 검증해야 할 때" },
+              { tag: "의사 결정권자",        line: "근거의 일치와 충돌을 한눈에" },
+              { tag: "AI 파워 유저",         line: "모델별 차이를 직접 비교" },
+              { tag: "창업가·독립 전문가",   line: "혼자 사고하기엔 너무 큰 결정" },
+            ].map((p) => (
+              <div key={p.tag} className={styles.persona}>
+                <div className={styles.personaLabel}>FOR</div>
+                <div className={styles.personaTag}>{p.tag}</div>
+                <div className={styles.personaLine}>{p.line}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── Why (3 cards) ────────────────────────────────────────────── */}
+      {/* ── Why (problem + comparison) ───────────────────────────────── */}
       <section id="why" className={styles.section}>
         <div className={styles.container}>
-          <div className={styles.whyGrid}>
-            <div>
-              <div className={styles.label}>왜 여러 모델이 필요한가</div>
-              <h2 className={styles.h2}>
-                AI는 확신에 차 있지만,<br />
-                그 확신에는<br />
-                <span className={styles.hl}>맹점이 있습니다.</span>
-              </h2>
-              <div className={styles.quote}>
-                “답은 매끈해 보이지만, 근거가 빠져 있습니다. 그 위에 세운 다음 판단은 흔들립니다.”
-              </div>
+          <div className={styles.whyHead}>
+            <div className={styles.label}>왜 여러 모델이 필요한가</div>
+            <h2 className={styles.h2}>
+              AI는 확신에 차 있지만,<br />
+              그 확신에는<br />
+              <span className={styles.hl}>맹점이 있습니다.</span>
+            </h2>
+            <p className={styles.lead} style={{ marginTop: 24 }}>
+              모든 모델은 자기만의 사각지대가 있습니다. 학습 데이터의 편향, 누락된 최신 정보, 미묘하게 다른 추론 스타일.
+              한 모델만 보면, 무엇을 놓쳤는지조차 알 수 없습니다.
+            </p>
+          </div>
+
+          <div className={styles.compareGrid}>
+            <div className={styles.compareBox}>
+              <div className={styles.compareLabel}>현재 — 단일 모델 사고</div>
+              <ol className={styles.compareList}>
+                <li><span className={styles.compareNum}>01</span><span>한 모델의 답이 맞는지 다른 탭을 열어 다시 묻는다.</span></li>
+                <li><span className={styles.compareNum}>02</span><span>응답을 머릿속에서 비교하며 어디가 다른지 추측한다.</span></li>
+                <li><span className={styles.compareNum}>03</span><span>모순이 있어도 알아채지 못하고 넘어간다.</span></li>
+                <li><span className={styles.compareNum}>04</span><span>결국 가장 ‘듣기 좋은 답’을 무의식적으로 선택한다.</span></li>
+              </ol>
             </div>
-            <div className={styles.cards}>
-              <div className={styles.card}>
-                <div className={styles.cardNum}>01</div>
-                <div className={styles.cardTitle}>단일 관점의 맹점</div>
-                <div className={styles.cardBody}>
-                  하나의 모델은 학습 편향과 추론 습관을 공유합니다. 그럴듯한 일관성 뒤에 놓친 전제가 남아도 드러나지 않아요.
-                </div>
-              </div>
-              <div className={styles.card}>
-                <div className={styles.cardNum}>02</div>
-                <div className={styles.cardTitle}>기준의 부재</div>
-                <div className={styles.cardBody}>
-                  답이 하나뿐이면 비교 기준이 없습니다. 어디까지가 사실이고 어디부터가 추정인지 구분하기 어렵습니다.
-                </div>
-              </div>
-              <div className={styles.card}>
-                <div className={styles.cardNum}>03</div>
-                <div className={styles.cardTitle}>피드백 단절</div>
-                <div className={styles.cardBody}>
-                  반론이 없으면 생각은 넓어지지 않아요. 다른 관점이 들어오지 않은 채 결론이 굳어집니다.
-                </div>
-              </div>
+            <div className={`${styles.compareBox} ${styles.compareBoxOn}`}>
+              <div className={styles.compareLabel}>coThink — 다관점 추론</div>
+              <ol className={styles.compareList}>
+                <li><span className={styles.compareNum}>01</span><span>한 번 묻고, 5개의 관점을 한 화면에서 받는다.</span></li>
+                <li><span className={styles.compareNum}>02</span><span>중재자가 일치점·모순점·고유 인사이트를 분리한다.</span></li>
+                <li><span className={styles.compareNum}>03</span><span>모델 간 의견이 갈리는 곳을 명시적으로 본다.</span></li>
+                <li><span className={styles.compareNum}>04</span><span>구조화된 종합을 토대로 스스로 판단한다.</span></li>
+              </ol>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Transformation (5 chips) ─────────────────────────────────── */}
-      <section className={styles.section} style={{ background: "#fff" }}>
-        <div className={styles.container}>
-          <div className={styles.transGrid}>
-            <div>
-              <div className={styles.label}>coThink의 접근</div>
-              <h2 className={styles.h2}>
-                응답을 나열하지 않습니다.<br />
-                <span className={styles.hl}>의사결정 구조로</span><br />
-                재해석합니다.
-              </h2>
-              <p className={styles.lead} style={{ marginTop: 24 }}>
-                coThink는 단순한 다중 AI 뷰어가 아닙니다. 여러 응답을 공통점·차이·모순의 층위로 해체하고,
-                사람이 실제로 사고하는 순서대로 다시 쌓아 올립니다.
-              </p>
-            </div>
-            <div className={styles.chips}>
-              {[
-                { n: "01", t: "하나의 질문 매핑", a: false },
-                { n: "02", t: "여러 모델 병렬 질의", a: false },
-                { n: "03", t: "차이 드러내기", a: false },
-                { n: "04", t: "모순·전제 확인", a: true },
-                { n: "05", t: "더 나은 판단으로", a: false },
-              ].map((c) => (
-                <div key={c.n} className={`${styles.chip} ${c.a ? styles.chipActive : ""}`}>
-                  <div className={styles.chipBullet}>{c.n}</div>
-                  <div>{c.t}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Output Structure (6 cards + code) ────────────────────────── */}
-      <section id="output" className={styles.section}>
+      {/* ── coThink approach (preview + 6 cards) ─────────────────────── */}
+      <section id="output" className={styles.section} style={{ background: "#fff" }}>
         <div className={styles.container}>
           <div className={styles.outCenter}>
-            <div className={styles.label}>출력 구조</div>
+            <div className={styles.label}>coThink의 접근</div>
             <h2 className={styles.h2}>
               응답이 아닌,<br />
               <span className={styles.hl}>판단 가능한 구조</span>를 받습니다.
             </h2>
             <p className={styles.lead} style={{ marginTop: 20 }}>
-              중재자 모델은 수집된 응답을 6개 축으로 다시 정리합니다. 매번 같은 형태로 받기 때문에,
-              다음 결정까지의 거리가 눈에 띄게 줄어듭니다.
+              일반 AI 채팅이 ‘긴 문단’을 돌려준다면, coThink는 판단에 필요한 구조를 돌려줍니다.
+              어디에 동의하고, 어디서 갈리고, 무엇을 더 물어야 하는지가 한눈에 보이도록.
             </p>
           </div>
-          <div className={styles.outGrid}>
-            <div className={styles.outCard}>
-              <div className={styles.outLabel}>01 · AGREEMENT</div>
-              <div className={styles.outTitle}>공통점</div>
-              <div className={styles.outBody}>여러 모델이 공통적으로 동의하는 지점. 합의가 형성된 사실의 영역.</div>
+
+          <div className={styles.synthBox}>
+            <div className={styles.synthHead}>
+              <span className={styles.synthHeadLabel}>STRUCTURED SYNTHESIS</span>
+              <span className={styles.synthHeadMed}>mediator: Claude Sonnet 4</span>
             </div>
-            <div className={styles.outCard}>
-              <div className={styles.outLabel}>02 · UNIQUE INSIGHTS</div>
-              <div className={styles.outTitle}>고유한 관점</div>
-              <div className={styles.outBody}>특정 모델만 제시한 시각. 놓치기 쉬운 대안적 프레임을 붙잡아 둡니다.</div>
+            <div className={styles.synthBody}>
+              <div className={styles.synthQ}>
+                <span className={styles.synthQLabel}>▸ 질문</span>
+                <p>B2B SaaS 신제품의 첫 타겟 시장으로 어디를 노려야 할까?</p>
+              </div>
+              <div className={styles.synthChips}>
+                {[
+                  { n: "GPT-4o",               c: "#10a37f" },
+                  { n: "Gemini 3 Flash",       c: "#4285f4" },
+                  { n: "Claude Sonnet 4",      c: "#d97757" },
+                  { n: "Perplexity Sonar Pro", c: "#20808d" },
+                  { n: "Grok 4.1 Fast",        c: "#e8562a" },
+                ].map((m) => (
+                  <span key={m.n} className={styles.synthChip} style={{ color: m.c, background: `${m.c}14`, borderColor: `${m.c}40` }}>
+                    <span className={styles.synthChipDot} style={{ background: m.c }} />
+                    {m.n}
+                  </span>
+                ))}
+              </div>
+              <div className={styles.synthRow}>
+                <div className={styles.synthRowLabel} style={{ color: "#3a8a4f" }}>+ AGREEMENT</div>
+                <div className={styles.synthRowText}>5개 모델 모두 ‘리서처·애널리스트’를 우선 타겟으로 지목.</div>
+              </div>
+              <div className={styles.synthRow} style={{ borderLeftColor: "#c23d1a" }}>
+                <div className={styles.synthRowLabel} style={{ color: "#c23d1a" }}>+ CONTRADICTION</div>
+                <div className={styles.synthRowText}>가격 민감도 평가가 모델 간 갈림 — 검증 필요.</div>
+              </div>
+              <div className={styles.synthRow} style={{ borderLeftColor: "var(--accent)" }}>
+                <div className={styles.synthRowLabel} style={{ color: "var(--accent)" }}>+ BEST ANSWER</div>
+                <div className={styles.synthRowText}><strong>MVP는 리서처 타겟, 월 $29 단일 플랜으로 시작.</strong></div>
+              </div>
             </div>
-            <div className={styles.outCard}>
-              <div className={styles.outLabel}>03 · CONTRADICTIONS</div>
-              <div className={styles.outTitle}>모순</div>
-              <div className={styles.outBody}>서로 충돌하거나 전제가 다른 주장. 판단이 필요한 지점이 여기에 모입니다.</div>
-            </div>
-            <div className={styles.outCard}>
-              <div className={styles.outLabel}>04 · BEST ANSWER</div>
-              <div className={styles.outTitle}>종합된 답</div>
-              <div className={styles.outBody}>위 내용을 반영해 중재자가 정리한 결론. 근거와 한계가 함께 기재됩니다.</div>
-            </div>
-            <div className={styles.outCard}>
-              <div className={styles.outLabel}>05 · ATTRIBUTIONS</div>
-              <div className={styles.outTitle}>기여 매핑</div>
-              <div className={styles.outBody}>어떤 모델의 어떤 판단이 결론에 반영됐는지 역추적할 수 있게 기록합니다.</div>
-            </div>
-            <div className={styles.outCard}>
-              <div className={styles.outLabel}>06 · FOLLOW-UPS</div>
-              <div className={styles.outTitle}>후속 질문</div>
-              <div className={styles.outBody}>다음 사고를 이어가기 위한 질문 제안. 생각을 끝내지 않고 다음으로 연결합니다.</div>
+            <div className={styles.synthFollow}>
+              <span className={styles.synthFollowLabel}>▸ FOLLOW-UPS</span>
+              <span className={styles.synthFollowChip}>가격 민감도 검증법은? →</span>
+              <span className={styles.synthFollowChip}>경쟁 제품의 약점은? →</span>
+              <span className={styles.synthFollowChip}>GTM 채널은? →</span>
             </div>
           </div>
 
-          <div className={styles.code}>
-            <div className={styles.codeHead}>
-              <span>▸ synthesis.json</span>
-              <span className={styles.codeMuted}>· mediator: claude-sonnet-4</span>
-            </div>
-            <div>
-              <span className={styles.codePunct}>{"{"}</span><br />
-              <span>  </span><span className={styles.codeKey}>"agreement"</span><span className={styles.codePunct}>: </span><span className={styles.codeStr}>"세 모델 모두 실행 리스크를 1순위로 꼽음"</span><span className={styles.codePunct}>,</span><br />
-              <span>  </span><span className={styles.codeKey}>"uniqueInsights"</span><span className={styles.codePunct}>: </span><span className={styles.codeStr}>{"{ \"claude\": \"경쟁사 포지셔닝 차이\", \"gpt\": \"가격 민감도\" }"}</span><span className={styles.codePunct}>,</span><br />
-              <span>  </span><span className={styles.codeKey}>"contradictions"</span><span className={styles.codePunct}>: </span><span className={styles.codeStr}>"런웨이 전제가 모델마다 6개월 / 12개월로 갈림"</span><span className={styles.codePunct}>,</span><br />
-              <span>  </span><span className={styles.codeKey}>"bestAnswer"</span><span className={styles.codePunct}>: </span><span className={styles.codeStr}>"단기 수익 검증 → 가격 테스트 → 시장 확장 순으로 재배열"</span><span className={styles.codePunct}>,</span><br />
-              <span>  </span><span className={styles.codeKey}>"attributions"</span><span className={styles.codePunct}>: </span><span className={styles.codeStr}>{"{ \"리스크 식별\": \"claude\", \"가격 프레임\": \"gpt\" }"}</span><span className={styles.codePunct}>,</span><br />
-              <span>  </span><span className={styles.codeKey}>"followUps"</span><span className={styles.codePunct}>: </span><span className={styles.codeStr}>{"[\"런웨이 전제 재검토\", \"가격 테스트 설계\"]"}</span><br />
-              <span className={styles.codePunct}>{"}"}</span>
-            </div>
+          <div className={styles.outGrid2}>
+            {[
+              { n: "01", en: "AGREEMENT",       ko: "일치점",       desc: "모든 모델이 동의한 사실. 가장 신뢰도 높은 출발점.",        ex: "5개 모델 모두 ‘초기 시장은 B2B SaaS 리서처’를 1순위로 지목.",   c: "#3a8a4f" },
+              { n: "02", en: "UNIQUE INSIGHTS", ko: "독창적 통찰",  desc: "한 모델만 짚어낸 관점. 사각지대를 메우는 단서.",            ex: "Perplexity: 최근 Gartner 리포트에서 ‘ensemble reasoning’ 언급 +212% YoY.", c: "#4285f4" },
+              { n: "03", en: "CONTRADICTIONS",  ko: "모순점",       desc: "모델 간 의견이 갈리는 지점. 스스로 판단해야 할 곳.",       ex: "Grok은 가격 민감도를 ‘낮음’, Claude는 ‘중간 이상’으로 평가.",   c: "#c23d1a" },
+              { n: "04", en: "BEST ANSWER",     ko: "최선의 답",    desc: "중재자가 모든 응답을 가중·종합한 단일 결론.",              ex: "→ MVP는 리서처/애널리스트 타겟, 월 $29 단일 플랜으로 시작 권장.", c: "var(--accent)" },
+              { n: "05", en: "ATTRIBUTIONS",    ko: "원인 분석",    desc: "어떤 모델이, 어느 근거로 무엇을 기여했는지 매핑.",         ex: "근거 A → GPT, Claude · 근거 B → Perplexity · 반론 → Grok", c: "var(--accent)" },
+              { n: "06", en: "FOLLOW-UPS",      ko: "후속 질문",    desc: "사고를 다음 단계로 끌어가는 3개의 제안 질문.",             ex: "1) 가격 민감도 검증법은? 2) 경쟁 제품의 약점은? 3) GTM 채널은?",  c: "#4285f4" },
+            ].map((card) => (
+              <div key={card.n} className={styles.outCard2}>
+                <div className={styles.outCard2Label} style={{ color: card.c }}>{card.n} · {card.en}</div>
+                <div className={styles.outCard2Title}>{card.ko}</div>
+                <div className={styles.outCard2Desc}>{card.desc}</div>
+                <div className={styles.outCard2Ex} style={{ borderLeftColor: card.c }}>{card.ex}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── Use cases ─────────────────────────────────────────────────── */}
-      <section id="use" className={styles.section} style={{ background: "#fff" }}>
+      <section id="use" className={styles.section}>
         <div className={styles.container}>
           <div className={styles.useHeadGrid}>
             <div>
@@ -313,8 +306,7 @@ export default function LandingPage() {
               </h2>
             </div>
             <p className={styles.lead}>
-              coThink는 결정을 빠르게 만드는 도구가 아니라, 결정을 잘 내리기 위한 사고 환경입니다. 혼자
-              중요한 판단을 책임져야 할 때 펼쳐 보세요.
+              coThink는 결정을 더 제대로 내리기 위한 사고 환경입니다. 혼자 중요한 판단을 빠르게 책임져야 할 때 활용하세요.
             </p>
           </div>
           <div className={styles.useGrid}>
@@ -344,6 +336,86 @@ export default function LandingPage() {
               <div className={styles.useTitle}>리서치 관점 다각화</div>
               <div className={styles.useBody}>
                 한 모델이 놓친 프레임·참고 자료·반례를 다른 모델이 채워 줍니다. 리서치 시작 단계에 특히 유용합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Social Proof ─────────────────────────────────────────────── */}
+      <section className={styles.section} style={{ background: "#fff" }}>
+        <div className={styles.container}>
+          <div className={styles.spHead}>
+            <div className={styles.label}>이미 시작한 사람들</div>
+            <h2 className={styles.h2}>
+              이미 1%의 이용자들은<br />
+              <span className={styles.hl}>모델을 교차 검증합니다.</span>
+            </h2>
+            <p className={styles.lead} style={{ marginTop: 20 }}>
+              단지 멀티 Tab을 오가며 불편하게 이용하고 있죠. coThink는 그 흐름을 한 화면 안으로 가져옵니다.
+            </p>
+          </div>
+
+          <div className={styles.diagram}>
+            <div className={styles.diagramSide}>
+              <div className={styles.diagramSideLabel}>현재 — 멀티 Tab</div>
+              <div className={styles.diagramTabs}>
+                {[
+                  { name: "ChatGPT",    color: "#10a37f" },
+                  { name: "Claude",     color: "#d97757" },
+                  { name: "Gemini",     color: "#4285f4" },
+                  { name: "Perplexity", color: "#20808d" },
+                ].map((t) => (
+                  <div key={t.name} className={styles.diagramTab}>
+                    <div className={styles.diagramTabBar}>
+                      <span /><span /><span />
+                      <span className={styles.diagramTabName} style={{ color: t.color }}>{t.name}</span>
+                    </div>
+                    <div className={styles.diagramTabQ}>Q. 같은 질문 복붙…</div>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.diagramFoot}>
+                <span className={styles.diagramFootStep}>4번 탭 열기</span>
+                <span className={styles.diagramFootSep}>·</span>
+                <span className={styles.diagramFootStep}>4번 복붙</span>
+                <span className={styles.diagramFootSep}>·</span>
+                <span className={styles.diagramFootStep}>4번 따로 읽기</span>
+              </div>
+            </div>
+
+            <div className={styles.diagramArrow} aria-hidden="true">
+              <span className={styles.diagramArrowLine} />
+              <span className={styles.diagramArrowHead}>→</span>
+            </div>
+
+            <div className={`${styles.diagramSide} ${styles.diagramSideOn}`}>
+              <div className={styles.diagramSideLabel}>coThink — 한 화면</div>
+              <div className={styles.diagramOne}>
+                <div className={styles.diagramOneHead}>
+                  <span /><span /><span />
+                  <span className={styles.diagramOneTitle}>cothink</span>
+                </div>
+                <div className={styles.diagramOneQ}>Q. 같은 질문 한 번만</div>
+                <div className={styles.diagramOneModels}>
+                  {[
+                    { n: "GPT-4o",     c: "#10a37f" },
+                    { n: "Claude",     c: "#d97757" },
+                    { n: "Gemini",     c: "#4285f4" },
+                    { n: "Perplexity", c: "#20808d" },
+                    { n: "Grok",       c: "#e8562a" },
+                  ].map((m) => (
+                    <span key={m.n} className={styles.diagramOneChip} style={{ color: m.c, background: `${m.c}14`, borderColor: `${m.c}40` }}>
+                      <span style={{ background: m.c }} />{m.n}
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.diagramOneSynth}>+ 중재자 종합 · 일치점 / 모순점 / 결론</div>
+              </div>
+              <div className={styles.diagramFoot}>
+                <span className={styles.diagramFootStepOn}>1번 묻기</span>
+                <span className={styles.diagramFootSep}>·</span>
+                <span className={styles.diagramFootStepOn}>구조화된 종합</span>
               </div>
             </div>
           </div>
