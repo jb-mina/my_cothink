@@ -164,6 +164,34 @@
 /* ── Truncation warning ──────────────────────────────────────────────────── */
 .tbox { margin-top: 14px; padding: 8px 12px; background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 6px; color: var(--warn); font-family: var(--font-mono); font-size: 12px; line-height: 1.5; }
 
+/* ── Clamp / Expand ──────────────────────────────────────────────────────── */
+.clampWrap { width: 100%; }
+.clamp { display: -webkit-box; -webkit-line-clamp: var(--clamp-lines, 10); -webkit-box-orient: vertical; overflow: hidden; line-clamp: var(--clamp-lines, 10); }
+.expandBtn { margin-top: 8px; background: transparent; border: 1px dashed var(--br-strong); border-radius: 6px; color: var(--fg-muted); font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; cursor: pointer; transition: all .15s; letter-spacing: .3px; }
+.expandBtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); border-style: solid; }
+
+/* ── Collapsed turn (header-only) ────────────────────────────────────────── */
+.tblkCol { width: 100%; max-width: 1080px; margin: 0 auto 10px; padding: 12px 18px; display: flex; align-items: center; gap: 10px; background: var(--bg-soft); border: 1px solid var(--br); border-radius: 10px; cursor: pointer; transition: all .15s; text-align: left; font-family: var(--font-sans); }
+.tblkCol:hover { background: var(--bg-sunken); border-color: var(--br-strong); }
+.tblkColIcon { color: var(--fg-muted); font-size: 12px; flex-shrink: 0; transition: transform .15s; }
+.tblkCol:hover .tblkColIcon { transform: translateX(2px); color: var(--accent); }
+.tblkColQ { flex: 1; font-size: 14px; color: var(--fg-2); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.tblkColHint { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); letter-spacing: .8px; text-transform: uppercase; flex-shrink: 0; }
+.collapseBtn { display: inline-block; margin-bottom: 12px; background: transparent; border: 1px solid var(--br); border-radius: 6px; color: var(--fg-muted); font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; cursor: pointer; transition: all .15s; letter-spacing: .3px; }
+.collapseBtn:hover { border-color: var(--fg-muted); color: var(--fg-2); background: var(--bg-soft); }
+
+/* ── Question text wrapper (allow clamp inside flex .tq) ─────────────────── */
+.tqText { flex: 1; min-width: 0; }
+
+/* ── Prior turns list (active session) ───────────────────────────────────── */
+.priorList { margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px dashed var(--br); }
+.priorLabel { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 10px; font-weight: 500; }
+
+/* ── Floating scroll nav ─────────────────────────────────────────────────── */
+.scrollNav { position: fixed; right: 24px; bottom: 24px; z-index: 30; display: flex; flex-direction: column; gap: 8px; }
+.snBtn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--br-strong); background: var(--bg); color: var(--fg-muted); font-size: 12px; cursor: pointer; transition: all .15s; box-shadow: 0 2px 8px rgba(0, 0, 0, .08); display: flex; align-items: center; justify-content: center; }
+.snBtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); transform: translateY(-1px); }
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .app,
