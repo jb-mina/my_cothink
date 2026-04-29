@@ -29,7 +29,7 @@ const MEDIATORS = [
   { id: "perplexity/sonar-pro",         short: "Perplexity", name: "Perplexity Sonar Pro", color: "#20b2aa" },
 ];
 
-const HISTORY_LIMIT = 3;
+const HISTORY_LIMIT = 5;
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 const SK = "cothink_v1";
