@@ -543,11 +543,12 @@ export default function Home() {
     (async () => {
       const server = await fetchThreadsFromServer();
       if (server === null) return;
-      if (server.length === 0 && local.length > 0) {
-        await Promise.allSettled(local.map(t => pushThreadToServer(t)));
+      const serverIds = new Set(server.map(t => t.id));
+      const missing = local.filter(t => !serverIds.has(t.id));
+      if (missing.length > 0) {
+        await Promise.allSettled(missing.map(t => pushThreadToServer(t)));
         const after = await fetchThreadsFromServer();
-        if (after) { saveAll(after); setThreads(after); }
-        return;
+        if (after) { saveAll(after); setThreads(after); return; }
       }
       saveAll(server);
       setThreads(server);
