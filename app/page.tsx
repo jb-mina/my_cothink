@@ -73,33 +73,65 @@ const normalizeTurn = (t: unknown): Turn | null => {
   return { question: o.question, responses, synthesis: normalizeSyn(o.synthesis) };
 };
 
+const normalizeThread = (t: unknown): Thread | null => {
+  if (!t || typeof t !== "object") return null;
+  const o = t as Record<string, unknown>;
+  if (!isStr(o.id) || !isStr(o.title) || typeof o.createdAt !== "number" || !Array.isArray(o.turns)) return null;
+  return {
+    id: o.id,
+    title: o.title,
+    createdAt: o.createdAt,
+    turns: (o.turns as unknown[]).map(normalizeTurn).filter((x): x is Turn => x !== null),
+  };
+};
+
 const loadAll = (): Thread[] => {
   try {
     const raw = JSON.parse(localStorage.getItem(SK) || "[]");
     if (!Array.isArray(raw)) return [];
-    return raw.map((t: unknown) => {
-      if (!t || typeof t !== "object") return null;
-      const o = t as Record<string, unknown>;
-      if (!isStr(o.id) || !isStr(o.title) || typeof o.createdAt !== "number" || !Array.isArray(o.turns)) return null;
-      return {
-        id: o.id,
-        title: o.title,
-        createdAt: o.createdAt,
-        turns: (o.turns as unknown[]).map(normalizeTurn).filter((x): x is Turn => x !== null),
-      };
-    }).filter((x): x is Thread => x !== null);
+    return raw.map(normalizeThread).filter((x): x is Thread => x !== null);
   } catch { return []; }
+};
+const saveAll = (ts: Thread[]) => {
+  try { localStorage.setItem(SK, JSON.stringify(ts.slice(0, 50))); } catch {}
 };
 const saveOne = (t: Thread) => {
   const all = loadAll(); const i = all.findIndex(x => x.id === t.id);
   if (i >= 0) all[i] = t; else all.unshift(t);
-  try { localStorage.setItem(SK, JSON.stringify(all.slice(0, 50))); } catch {}
+  saveAll(all);
 };
 const removeOne = (id: string) => {
   const all = loadAll().filter(t => t.id !== id);
-  try { localStorage.setItem(SK, JSON.stringify(all)); } catch {}
+  saveAll(all);
   return all;
 };
+
+// ── Server sync (Supabase via /api/threads) ──────────────────────────────────
+async function fetchThreadsFromServer(): Promise<Thread[] | null> {
+  try {
+    const res = await fetch("/api/threads", { cache: "no-store" });
+    if (!res.ok) return null;
+    const arr = await res.json();
+    if (!Array.isArray(arr)) return null;
+    return arr.map(normalizeThread).filter((x): x is Thread => x !== null);
+  } catch { return null; }
+}
+async function pushThreadToServer(t: Thread): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/threads/${encodeURIComponent(t.id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: t.title, turns: t.turns, createdAt: t.createdAt }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+async function deleteThreadOnServer(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/threads/${encodeURIComponent(id)}`, { method: "DELETE" });
+    return res.ok;
+  } catch { return false; }
+}
 
 // ── Copy ──────────────────────────────────────────────────────────────────────
 function CopyBtn({ text, label = "복사" }: { text: string; label?: string }) {
@@ -505,7 +537,22 @@ export default function Home() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const tref = useRef<Thread | null>(null);
 
-  useEffect(() => { setThreads(loadAll()); }, []);
+  useEffect(() => {
+    const local = loadAll();
+    setThreads(local);
+    (async () => {
+      const server = await fetchThreadsFromServer();
+      if (server === null) return;
+      if (server.length === 0 && local.length > 0) {
+        await Promise.allSettled(local.map(t => pushThreadToServer(t)));
+        const after = await fetchThreadsFromServer();
+        if (after) { saveAll(after); setThreads(after); }
+        return;
+      }
+      saveAll(server);
+      setThreads(server);
+    })();
+  }, []);
   useEffect(() => {
     if (synth) setTimeout(() => sref.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
   }, [synth]);
@@ -558,6 +605,9 @@ export default function Home() {
       const prev = tref.current;
       const thread: Thread = prev ? { ...prev, turns: [...prev.turns, turn] } : { id: String(Date.now()), title: tq.slice(0, 70), createdAt: Date.now(), turns: [turn] };
       tref.current = thread; setAThread(thread); saveOne(thread); setThreads(loadAll());
+      pushThreadToServer(thread).then(ok => {
+        if (!ok) console.error("Failed to sync thread to server:", thread.id);
+      });
     } catch (e: unknown) {
       setErr("종합 분석 실패: " + (e instanceof Error ? e.message : "unknown"));
     }
@@ -572,6 +622,9 @@ export default function Home() {
     e.stopPropagation(); setThreads(removeOne(id));
     if (vThread?.id === id) setVThread(null);
     if (aThread?.id === id) { setAThread(null); tref.current = null; }
+    deleteThreadOnServer(id).then(ok => {
+      if (!ok) console.error("Failed to delete thread on server:", id);
+    });
   };
 
   const isRunning = phase === "q" || phase === "s";
