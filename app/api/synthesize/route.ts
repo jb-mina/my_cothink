@@ -47,7 +47,7 @@ Available model names: ${modelNames}. Only include in attributions if meaningful
       }
       const msg = await anthropic.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 3000,
+        max_tokens: 8000,
         messages: [{ role: "user", content: prompt }],
       });
       const block = msg.content[0];
@@ -59,7 +59,7 @@ Available model names: ${modelNames}. Only include in attributions if meaningful
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "HTTP-Referer": "https://getcothink.com", "X-Title": "coThink" },
-        body: JSON.stringify({ model: mediatorId, messages: [{ role: "user", content: prompt }], max_tokens: 3000 }),
+        body: JSON.stringify({ model: mediatorId, messages: [{ role: "user", content: prompt }], max_tokens: 8000 }),
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error?.message || `HTTP ${res.status}`);
@@ -67,7 +67,18 @@ Available model names: ${modelNames}. Only include in attributions if meaningful
       truncated = data.choices?.[0]?.finish_reason === "length";
     }
 
-    const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    let parsed;
+    try {
+      parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+    } catch (e) {
+      if (truncated) {
+        return NextResponse.json(
+          { error: "종합 응답이 길이 한도에 잘렸습니다. 질문을 줄이거나 다른 중재자를 시도해주세요." },
+          { status: 500 }
+        );
+      }
+      throw e;
+    }
     return NextResponse.json({ ...parsed, _truncated: truncated });
   } catch (e: unknown) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "unknown" }, { status: 500 });
