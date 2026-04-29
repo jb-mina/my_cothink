@@ -29,7 +29,7 @@ npm run start   # 프로덕션 실행
 - `APP_PASSWORD` — 관리자 로그인 비밀번호 (평문 비교, `/admin` 접근 쿠키 정확 일치용)
 
 ### 초대 시스템 (PR-B 이후)
-- `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` — `invitations` 테이블 접근용 서비스 롤 클라이언트 (`lib/supabase.ts`). 클라이언트 번들에 노출하지 말 것 (`NEXT_PUBLIC_` 금지).
+- `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` — `invitations` · `threads` 테이블 접근용 서비스 롤 클라이언트 (`lib/supabase.ts`). 클라이언트 번들에 노출하지 말 것 (`NEXT_PUBLIC_` 금지).
 - `RESEND_API_KEY` — 초대 코드·관리자 알림 메일 발송
 - `RESEND_FROM_EMAIL` — 발신 주소 (기본값 `onboarding@resend.dev`. 도메인 인증 시 `noreply@getcothink.com` 등)
 - `ADMIN_EMAIL` — 신규 초대 요청 알림 수신 주소 (생략 시 관리자 알림만 스킵되고 요청 자체는 정상 처리)
@@ -39,12 +39,12 @@ npm run start   # 프로덕션 실행
 ## 아키텍처 핵심
 
 - **Next.js 14.2.5 App Router + TypeScript 5**. Pages Router는 쓰지 않는다.
-- **메인 앱 백엔드는 stateless**. 스레드는 브라우저 `localStorage`에 저장된다 (key: `cothink_v1`, 최대 50개). 초대 시스템만 Supabase를 쓴다 — **앱 데이터용 DB가 아니다**.
+- **스레드 저장**: Supabase `threads` 테이블이 source of truth. 브라우저 `localStorage["cothink_v1"]`(최대 50개)는 즉시 렌더링·오프라인용 캐시. 사용자 식별자는 초대 코드(`u:<CODE>` 쿠키의 CODE 부분) — 별도 user 테이블 없이 `threads.code` 컬럼에 매칭. 초기 로드 시 localStorage 즉시 렌더 → `/api/threads` 로 갱신. 서버가 비어 있고 로컬에만 데이터가 있으면 자동 일괄 업로드 마이그레이션 1회. 충돌은 last-write-wins(단일 사용자 운영 전제). 향후 PR-D에서 `code` → `user_id` 매핑 마이그레이션 예정.
 - **인증은 두 가지 역할**. httpOnly 쿠키(`cothink_auth`, 30일)의 값으로 구분:
   - `APP_PASSWORD`와 정확히 일치 → **admin** (`/admin` 접근 가능)
-  - `u:<CODE>` 형식 → **user** (초대 코드 로그인)
+  - `u:<CODE>` 형식 → **user** (초대 코드 로그인, 스레드 API에서 식별자로 사용)
   - 그 외 → **none**
-  쿠키 값은 아직 서명되지 않는다 — JWT 이관은 후속 PR-D 예정. 사용자별 데이터 저장은 **여전히 없음** (스레드는 브라우저 로컬).
+  쿠키 값은 아직 서명되지 않는다 — JWT 이관은 후속 PR-D 예정.
 - **배포 도메인**: `getcothink.com` (Vercel).
 - **스타일 정책**:
   - 메인 앱(`app/page.tsx`) — CSS Modules (`app/page.module.css`), `globals.css`의 amber 팔레트 사용
@@ -57,7 +57,7 @@ npm run start   # 프로덕션 실행
 
 `middleware.ts`의 matcher는 `_next/static`, `_next/image`, `favicon.ico`만 제외하고 나머지 전부에 실행된다. 함수 내부는 다음 순서로 분기:
 
-1. `/api/*` → 즉시 통과. 개별 라우트가 필요 시 인증을 직접 처리. `/api/login`·`/api/invitation-request`는 공개, `/api/query`·`/api/synthesize`는 **아직 미보호** (JWT 도입 후 PR-D에서 잠글 예정).
+1. `/api/*` → 즉시 통과. 개별 라우트가 필요 시 인증을 직접 처리. `/api/login`·`/api/invitation-request`는 공개, `/api/threads`(목록·CRUD)는 `lib/auth.ts#getCurrentCode`로 user 코드 검증, `/api/query`·`/api/synthesize`는 **아직 미보호** (JWT 도입 후 PR-D에서 잠글 예정).
 2. `/landing` → 항상 공개
 3. `/login` → 항상 공개
 4. 쿠키 역할(`role()`) 분류: admin / user / none
