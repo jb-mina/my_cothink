@@ -8,14 +8,11 @@ type FormState = { email: string; status: FormStatus; msg: string };
 const initForm: FormState = { email: "", status: "idle", msg: "" };
 
 const MODELS = [
-  { name: "GPT-4o",            vendor: "OpenAI",      mono: "G", color: "#10a37f" },
-  { name: "GPT-4.1",           vendor: "OpenAI",      mono: "G", color: "#0d8a6a" },
-  { name: "Claude Sonnet 4",   vendor: "Anthropic",   mono: "C", color: "#d97757" },
-  { name: "Claude Opus 4",     vendor: "Anthropic",   mono: "C", color: "#b85a3e" },
-  { name: "Gemini 2.5 Pro",    vendor: "Google",      mono: "G", color: "#4285f4" },
-  { name: "Grok 4.1 Fast",     vendor: "xAI",         mono: "X", color: "#1c1816" },
-  { name: "Perplexity Sonar Pro", vendor: "Perplexity", mono: "P", color: "#20808d" },
-  { name: "DeepSeek V3",       vendor: "DeepSeek",    mono: "D", color: "#4d6bfe" },
+  { name: "GPT-5.1",              vendor: "OpenAI",      mono: "G", color: "#10a37f" },
+  { name: "Gemini 3 Flash",       vendor: "Google",      mono: "G", color: "#4285f4" },
+  { name: "Claude Sonnet 4.6",    vendor: "Anthropic",   mono: "C", color: "#d97757" },
+  { name: "Perplexity Sonar Pro", vendor: "Perplexity",  mono: "P", color: "#20808d" },
+  { name: "Grok 4.1 Fast",        vendor: "xAI",         mono: "X", color: "#1c1816" },
 ];
 
 async function submitEmail(email: string): Promise<{ status: FormStatus; msg: string }> {
@@ -133,9 +130,9 @@ export default function LandingPage() {
                 </div>
                 <div className={styles.heroAnswers}>
                   {[
-                    { name: "GPT-4o",               color: "#10a37f", text: "비교 분석은 의사결정 품질을 30% 이상 향상시킨다는 연구가…" },
+                    { name: "GPT-5.1",              color: "#10a37f", text: "비교 분석은 의사결정 품질을 30% 이상 향상시킨다는 연구가…" },
                     { name: "Gemini 3 Flash",       color: "#4285f4", text: "다중 관점 추론은 단일 모델 편향을 줄이는 가장 효과적인…" },
-                    { name: "Claude Sonnet 4",      color: "#d97757", text: "여러 모델의 응답을 구조화하여 종합하면 더 신뢰성 있는…" },
+                    { name: "Claude Sonnet 4.6",    color: "#d97757", text: "여러 모델의 응답을 구조화하여 종합하면 더 신뢰성 있는…" },
                     { name: "Perplexity Sonar Pro", color: "#20808d", text: "최근 메타 분석에 따르면, 앙상블 추론은 정확도를…" },
                     { name: "Grok 4.1 Fast",        color: "#e8562a", text: "1) 편향 감소 2) 누락 보완 3) 모순 발견 — 핵심 이점." },
                   ].map((m, i) => (
@@ -232,7 +229,7 @@ export default function LandingPage() {
           <div className={styles.synthBox}>
             <div className={styles.synthHead}>
               <span className={styles.synthHeadLabel}>STRUCTURED SYNTHESIS</span>
-              <span className={styles.synthHeadMed}>mediator: Claude Sonnet 4</span>
+              <span className={styles.synthHeadMed}>mediator: Claude Sonnet 4.6</span>
             </div>
             <div className={styles.synthBody}>
               <div className={styles.synthQ}>
@@ -241,9 +238,9 @@ export default function LandingPage() {
               </div>
               <div className={styles.synthChips}>
                 {[
-                  { n: "GPT-4o",               c: "#10a37f" },
+                  { n: "GPT-5.1",              c: "#10a37f" },
                   { n: "Gemini 3 Flash",       c: "#4285f4" },
-                  { n: "Claude Sonnet 4",      c: "#d97757" },
+                  { n: "Claude Sonnet 4.6",    c: "#d97757" },
                   { n: "Perplexity Sonar Pro", c: "#20808d" },
                   { n: "Grok 4.1 Fast",        c: "#e8562a" },
                 ].map((m) => (
@@ -399,7 +396,7 @@ export default function LandingPage() {
                 <div className={styles.diagramOneQ}>Q. 같은 질문 한 번만</div>
                 <div className={styles.diagramOneModels}>
                   {[
-                    { n: "GPT-4o",     c: "#10a37f" },
+                    { n: "GPT-5.1",    c: "#10a37f" },
                     { n: "Claude",     c: "#d97757" },
                     { n: "Gemini",     c: "#4285f4" },
                     { n: "Perplexity", c: "#20808d" },
@@ -470,7 +467,7 @@ export default function LandingPage() {
                 <span className={styles.hl}>한 화면에서.</span>
               </h2>
               <p className={styles.lead} style={{ marginTop: 20 }}>
-                Anthropic · OpenAI · Google · xAI · Perplexity · DeepSeek 등 주요 벤더의 최신 모델을 같은 인터페이스로
+                Anthropic · OpenAI · Google · xAI · Perplexity 등 주요 벤더의 최신 모델을 같은 인터페이스로
                 호출하고 비교합니다. 추가되는 모델은 즉시 선택지에 반영됩니다.
               </p>
             </div>
@@ -487,7 +484,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <div className={styles.pillsNote}>
-                · 기본 중재자: Claude Sonnet 4 · 질의 대상은 자유롭게 선택
+                · 기본 중재자: Claude Sonnet 4.6 · 질의 대상은 자유롭게 선택
               </div>
             </div>
           </div>
