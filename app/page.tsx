@@ -33,7 +33,63 @@ const HISTORY_LIMIT = 5;
 
 // ── Storage ───────────────────────────────────────────────────────────────────
 const SK = "cothink_v1";
-const loadAll = (): Thread[] => { try { return JSON.parse(localStorage.getItem(SK) || "[]"); } catch { return []; } };
+const isStr = (v: unknown): v is string => typeof v === "string";
+
+const normalizeSyn = (s: unknown): Syn | null => {
+  if (!s || typeof s !== "object") return null;
+  const o = s as Record<string, unknown>;
+  return {
+    agreement:      isStr(o.agreement)      ? o.agreement      : "",
+    uniqueInsights: isStr(o.uniqueInsights) ? o.uniqueInsights : "",
+    contradictions: isStr(o.contradictions) ? o.contradictions : "",
+    bestAnswer:     isStr(o.bestAnswer)     ? o.bestAnswer     : "",
+    attributions:   o.attributions && typeof o.attributions === "object"
+      ? Object.fromEntries(
+          Object.entries(o.attributions as Record<string, unknown>).filter(([, v]) => isStr(v))
+        ) as Record<string, string>
+      : {},
+    followUps:      Array.isArray(o.followUps) ? (o.followUps as unknown[]).filter(isStr) : [],
+    _truncated:     typeof o._truncated === "boolean" ? o._truncated : undefined,
+  };
+};
+
+const normalizeTurn = (t: unknown): Turn | null => {
+  if (!t || typeof t !== "object") return null;
+  const o = t as Record<string, unknown>;
+  if (!isStr(o.question)) return null;
+  const responses: Record<string, { status: string; content: string; truncated?: boolean }> = {};
+  if (o.responses && typeof o.responses === "object") {
+    for (const [k, v] of Object.entries(o.responses as Record<string, unknown>)) {
+      if (v && typeof v === "object") {
+        const r = v as Record<string, unknown>;
+        responses[k] = {
+          status: isStr(r.status) ? r.status : "done",
+          content: isStr(r.content) ? r.content : "",
+          truncated: typeof r.truncated === "boolean" ? r.truncated : undefined,
+        };
+      }
+    }
+  }
+  return { question: o.question, responses, synthesis: normalizeSyn(o.synthesis) };
+};
+
+const loadAll = (): Thread[] => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SK) || "[]");
+    if (!Array.isArray(raw)) return [];
+    return raw.map((t: unknown) => {
+      if (!t || typeof t !== "object") return null;
+      const o = t as Record<string, unknown>;
+      if (!isStr(o.id) || !isStr(o.title) || typeof o.createdAt !== "number" || !Array.isArray(o.turns)) return null;
+      return {
+        id: o.id,
+        title: o.title,
+        createdAt: o.createdAt,
+        turns: (o.turns as unknown[]).map(normalizeTurn).filter((x): x is Turn => x !== null),
+      };
+    }).filter((x): x is Thread => x !== null);
+  } catch { return []; }
+};
 const saveOne = (t: Thread) => {
   const all = loadAll(); const i = all.findIndex(x => x.id === t.id);
   if (i >= 0) all[i] = t; else all.unshift(t);
@@ -127,6 +183,7 @@ function fmt(text: string): React.ReactNode[] {
 }
 
 function MD({ c }: { c: string }) {
+  if (typeof c !== "string" || c.length === 0) return null;
   const lines = c.split("\n");
   const out: React.ReactNode[] = [];
   let i = 0;
