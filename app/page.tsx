@@ -15,15 +15,15 @@ type Thread = { id: string; title: string; createdAt: number; turns: Turn[] };
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const MODELS = [
-  { id: "openai/gpt-4o",                name: "GPT-4o",               short: "ChatGPT",    color: "#10a37f" },
+  { id: "openai/gpt-5.1",                name: "GPT-5.1",              short: "ChatGPT",    color: "#10a37f" },
   { id: "google/gemini-3-flash-preview", name: "Gemini 3 Flash",       short: "Gemini",     color: "#4285f4" },
-  { id: "anthropic/claude-sonnet-4.5",  name: "Claude Sonnet 4.5",    short: "Claude",     color: "#d4954a" },
+  { id: "anthropic/claude-sonnet-4.6",  name: "Claude Sonnet 4.6",    short: "Claude",     color: "#d4954a" },
   { id: "perplexity/sonar-pro",         name: "Perplexity Sonar Pro", short: "Perplexity", color: "#20b2aa" },
   { id: "x-ai/grok-4.1-fast",          name: "Grok 4.1 Fast",        short: "Grok",       color: "#e8562a" },
 ];
 const MEDIATORS = [
-  { id: "anthropic",                    short: "Claude 4",   name: "Claude Sonnet 4",      color: "#42c8a0" },
-  { id: "openai/gpt-4o",               short: "GPT-4o",     name: "GPT-4o",               color: "#10a37f" },
+  { id: "anthropic",                    short: "Claude 4.6", name: "Claude Sonnet 4.6",    color: "#42c8a0" },
+  { id: "openai/gpt-5.1",              short: "GPT-5.1",    name: "GPT-5.1",              color: "#10a37f" },
   { id: "google/gemini-3-flash-preview",short: "Gemini 3",   name: "Gemini 3 Flash",       color: "#4285f4" },
   { id: "x-ai/grok-4.1-fast",          short: "Grok 4.1",   name: "Grok 4.1 Fast",        color: "#e8562a" },
   { id: "perplexity/sonar-pro",         short: "Perplexity", name: "Perplexity Sonar Pro", color: "#20b2aa" },

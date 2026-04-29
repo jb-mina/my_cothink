@@ -46,7 +46,7 @@ Available model names: ${modelNames}. Only include in attributions if meaningful
         return NextResponse.json({ error: "ANTHROPIC_API_KEY missing" }, { status: 500 });
       }
       const msg = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 3000,
         messages: [{ role: "user", content: prompt }],
       });
