@@ -428,9 +428,9 @@ function SynthPanel({ s, onFU, cq, setCQ, onCS, compact, onAttrClick }: {
           <>
             <div className={styles.fl} style={{ marginTop: 14 }}>직접 입력</div>
             <div className={styles.crow}>
-              <input className={styles.ci} placeholder="후속 질문을 직접 입력하세요..."
-                value={cq || ""} onChange={e => setCQ(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && cq?.trim()) onCS?.(); }} />
+              <textarea className={styles.ci} placeholder="후속 질문을 직접 입력하세요..."
+                rows={2}
+                value={cq || ""} onChange={e => setCQ(e.target.value)} />
               <button className={styles.cb} onClick={onCS} disabled={!cq?.trim()}>→</button>
             </div>
           </>
@@ -773,12 +773,10 @@ export default function Home() {
             )}
             <div className={styles.qw}>
               <textarea className={styles.qa} placeholder="질문을 입력하세요" value={q}
-                onChange={e => setQ(e.target.value)}
-                onKeyDown={e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") void run(q); }} />
+                onChange={e => setQ(e.target.value)} />
               <div className={styles.qact}>
                 <button className={styles.run} onClick={() => void run(q)} disabled={isRunning}>{isRunning ? "실행 중..." : "→ coThink"}</button>
                 {Object.keys(resp).length > 0 && <button className={styles.newq} onClick={newT}>새 질문</button>}
-                <span className={styles.hint}>⌘↵</span>
               </div>
             </div>
             {err && <div className={styles.ebox}>⚠ {err}</div>}
